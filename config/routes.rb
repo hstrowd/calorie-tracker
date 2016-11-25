@@ -53,4 +53,11 @@ Rails.application.routes.draw do
   #     # (app/controllers/admin/products_controller.rb)
   #     resources :products
   #   end
+
+  namespace :api do
+    namespace :v1 do
+      mount_devise_token_auth_for 'User', at: 'auth', skip: [:registrations, :passwords, :omniauth_callbacks]
+      resources :users, only: [:create, :show]
+    end
+  end
 end

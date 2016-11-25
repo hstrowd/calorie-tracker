@@ -1,0 +1,152 @@
+FORMAT: 1A
+HOST: https://calorietracker.com/api/v1/
+
+# Calorie Tracker
+
+The API for a personal calorie tracking service.
+
+## Authentication [/auth]
+
+### Sign In [POST /auth/sign_in]
+
+Authenticates a user based on their email address and password. Successful responses will include header values for: `Access-Token`, `Client`, and `Uid`. These headers and their values must be included on all subsequent requests for that users. Additionally successful responses will include an `Expiry` header value that identifies the time at which the token will expire.
+
+Any successful request that authenticates the user using this token, will update the user's access token and include information for the updated token in the response headers. It is the clients responsibility to use this updated token on subsequent requests. 
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+
+    + Attributes (User Authentication Parameters)
+
++ Response 200 (application/json)
+
+    + Headers
+
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: harrison@example.com
+            Token-Type: Bearer
+            Expiry: 1481294000
+
+    + Attributes (User Response)
+
+
+### Sign Out [DELETE /auth/sign_out]
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: harrison@example.com
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+              "success": true
+            }
+
+
+### Validate Token [GET /auth/validate_token]
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: harrison@example.com
+
++ Response 200 (application/json)
+
+    + Headers
+
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: harrison@example.com
+            Token-Type: Bearer
+            Expiry: 1481294000
+
+    + Attributes (User Response)
+
+
+
+## User Resources [/users]
+
+### Create New User [POST]
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+
+    + Attributes (User Create Parameters)
+
++ Response 200 (application/json)
+
+    + Attributes (User Response)
+
+### Retrieve User Record [GET /users/{user_id}]
+
+Users are only allowed to retrieve the details for their own user record.
+
++ Parameters
+
+    + user_id: 1234 (number, required) - The ID of the user record to be retrieved.
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: harrison@example.com
+
++ Response 200 (application/json)
+
+    + Headers
+
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: harrison@example.com
+            Token-Type: Bearer
+            Expiry: 1481294000
+
+    + Attributes (User Response)
+
+
+# Data Structures
+
+## Timestamps (object)
+- created_at: `2016-11-22T21:39:13Z`
+- updated_at: `2016-11-22T22:14:42Z`
+
+## User Base Attributes (object)
+- email: john.doe@example.com (string, required)
+- name: `John Doe` (string, required)
+
+## User Create Parameters (User Base Attributes)
+- password: Pa$$word1234 (string, required)
+
+## User Authentication Parameters (object)
+- email: john.doe@example.com (string, required)
+- password: Pa$$word1234 (string, required)
+
+## User Resource (User Base Attributes)
+- id: 1234 (number)
+- provider: email (string)
+- uid: john.doe@example.com (string)
+- Include Timestamps
+
+## User Response (object)
+- data (User Resource)
