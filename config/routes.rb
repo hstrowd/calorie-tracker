@@ -56,7 +56,12 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :v1 do
-      mount_devise_token_auth_for 'User', at: 'auth', skip: [:registrations, :passwords, :omniauth_callbacks]
+      mount_devise_token_auth_for 'User', at: 'auth',
+                                  skip: [:registrations, :passwords, :omniauth_callbacks],
+                                  controllers: {
+                                    sessions: 'api/v1/sessions',
+                                    token_validations: 'api/v1/token_validations'
+                                  }
       resources :users, only: [:create, :show]
     end
   end
