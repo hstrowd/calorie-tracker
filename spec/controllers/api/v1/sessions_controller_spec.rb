@@ -2,6 +2,7 @@ require 'rails_helper'
 
 RSpec.describe DeviseTokenAuth::SessionsController do
   include Rack::Test::Methods
+  include AuthenticationHelper
 
   def app
     CalorieTracker::Application
@@ -55,11 +56,7 @@ RSpec.describe DeviseTokenAuth::SessionsController do
     context 'success requsets' do
       before do
         @user = FactoryGirl.create(:user)
-        @token = @user.create_new_auth_token
-
-        @user.build_auth_header(@token['access-token'], @token['client']).each do |key, value|
-          header(key, value)
-        end
+        @token = set_auth_headers(@user)
 
         # Force the request not to be treated as a batched request to validate the access token updating logic.
         get "/api/v1/auth/validate_token", unbatch: true
@@ -86,9 +83,7 @@ RSpec.describe DeviseTokenAuth::SessionsController do
       context 'invalid access token' do
         before do
           @user = FactoryGirl.create(:user)
-          token = @user.create_new_auth_token
-
-          @user.build_auth_header(token['access-token'], token['client']).each do |key, value|
+          @user.create_new_auth_token.each do |key, value|
             value = value[0..-2] if key == 'access-token'
             header(key, value)
           end
@@ -107,11 +102,7 @@ RSpec.describe DeviseTokenAuth::SessionsController do
     context 'success requsets' do
       before do
         @user = FactoryGirl.create(:user)
-        @token = @user.create_new_auth_token
-
-        @user.build_auth_header(@token['access-token'], @token['client']).each do |key, value|
-          header(key, value)
-        end
+        @token = set_auth_headers(@user)
 
         delete "/api/v1/auth/sign_out"
       end
@@ -130,9 +121,7 @@ RSpec.describe DeviseTokenAuth::SessionsController do
       context 'invalid access token' do
         before do
           @user = FactoryGirl.create(:user)
-          token = @user.create_new_auth_token
-
-          @user.build_auth_header(token['access-token'], token['client']).each do |key, value|
+          @user.create_new_auth_token.each do |key, value|
             value = value[0..-2] if key == 'access-token'
             header(key, value)
           end

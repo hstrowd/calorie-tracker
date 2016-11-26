@@ -5,5 +5,7 @@ class User < ActiveRecord::Base
   include DeviseTokenAuth::Concerns::User
   include Serializable
 
+  has_many :meals
+
   validates_presence_of :name
 end

@@ -2,6 +2,8 @@ require 'rails_helper'
 
 RSpec.describe Api::V1::UsersController do
   include Rack::Test::Methods
+  include DateTimeHelper
+  include AuthenticationHelper
 
   def app
     CalorieTracker::Application
@@ -34,6 +36,7 @@ RSpec.describe Api::V1::UsersController do
         expect(json_body['data']['id']).to eq(new_user.id)
         expect(json_body['data']['name']).to eq(@new_user_attrs[:name])
         expect(json_body['data']['email']).to eq(@new_user_attrs[:email])
+        expect(json_body['data']['created_at']).not_to be_blank
         expect(new_user.valid_password?(@new_user_attrs[:password])).to be_truthy
       end
     end
@@ -94,7 +97,7 @@ RSpec.describe Api::V1::UsersController do
 
               json_body = JSON.parse(last_response.body)
               expect(json_body['code']).to eq('invalid_request')
-              expect(json_body['error']).to match(/#{attribute}.*blank/i)
+              expect(json_body['error']).to match(/#{attribute.humanize}.*blank/i)
             end
           end
         end
@@ -106,11 +109,7 @@ RSpec.describe Api::V1::UsersController do
     context 'success requsets' do
       before do
         @user = FactoryGirl.create(:user)
-        @token = @user.create_new_auth_token
-
-        @user.build_auth_header(@token['access-token'], @token['client']).each do |key, value|
-          header(key, value)
-        end
+        @token = set_auth_headers(@user)
 
         # Force the request not to be treated as a batched request to validate the access token updating logic.
         get "/api/v1/users/#{@user.id}", unbatch: true
@@ -126,6 +125,7 @@ RSpec.describe Api::V1::UsersController do
         expect(json_body['data']['id']).to eq(@user.id)
         expect(json_body['data']['name']).to eq(@user.name)
         expect(json_body['data']['email']).to eq(@user.email)
+        expect(normalize_date_time(json_body['data']['created_at'])).to eq(normalize_date_time(@user.created_at))
       end
 
       it 'returns a new access token' do
@@ -138,12 +138,7 @@ RSpec.describe Api::V1::UsersController do
     context 'failure requests' do
       context 'unauthorized' do
         before do
-          current_user = FactoryGirl.create(:user)
-          token = current_user.create_new_auth_token
-
-          current_user.build_auth_header(token['access-token'], token['client']).each do |key, value|
-            header(key, value)
-          end
+          create_and_auth_user
 
           other_user = FactoryGirl.create(:user)
           get "/api/v1/users/#{other_user.id}"
@@ -162,12 +157,7 @@ RSpec.describe Api::V1::UsersController do
 
       context 'unknown user' do
         before do
-          user = FactoryGirl.create(:user)
-          token = user.create_new_auth_token
-
-          user.build_auth_header(token['access-token'], token['client']).each do |key, value|
-            header(key, value)
-          end
+          create_and_auth_user
 
           get "/api/v1/users/#{987}"
         end

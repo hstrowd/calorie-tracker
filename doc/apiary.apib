@@ -27,7 +27,7 @@ Any successful request that authenticates the user using this token, will update
 
             Access-Token: GyLhSQFKySUNloOOX832MQ
             Client: aUovw5WgoopgKfPlhe4Kfw
-            Uid: harrison@example.com
+            Uid: john.doe@example.com
             Token-Type: Bearer
             Expiry: 1481294000
 
@@ -43,7 +43,7 @@ Any successful request that authenticates the user using this token, will update
             Content-Type: application/json
             Access-Token: GyLhSQFKySUNloOOX832MQ
             Client: aUovw5WgoopgKfPlhe4Kfw
-            Uid: harrison@example.com
+            Uid: john.doe@example.com
 
 + Response 200 (application/json)
 
@@ -63,7 +63,7 @@ Any successful request that authenticates the user using this token, will update
             Content-Type: application/json
             Access-Token: GyLhSQFKySUNloOOX832MQ
             Client: aUovw5WgoopgKfPlhe4Kfw
-            Uid: harrison@example.com
+            Uid: john.doe@example.com
 
 + Response 200 (application/json)
 
@@ -71,7 +71,7 @@ Any successful request that authenticates the user using this token, will update
 
             Access-Token: GyLhSQFKySUNloOOX832MQ
             Client: aUovw5WgoopgKfPlhe4Kfw
-            Uid: harrison@example.com
+            Uid: john.doe@example.com
             Token-Type: Bearer
             Expiry: 1481294000
 
@@ -91,7 +91,7 @@ Any successful request that authenticates the user using this token, will update
 
     + Attributes (User Create Parameters)
 
-+ Response 200 (application/json)
++ Response 201 (application/json)
 
     + Attributes (User Response)
 
@@ -110,7 +110,7 @@ Users are only allowed to retrieve the details for their own user record.
             Content-Type: application/json
             Access-Token: GyLhSQFKySUNloOOX832MQ
             Client: aUovw5WgoopgKfPlhe4Kfw
-            Uid: harrison@example.com
+            Uid: john.doe@example.com
 
 + Response 200 (application/json)
 
@@ -118,18 +118,123 @@ Users are only allowed to retrieve the details for their own user record.
 
             Access-Token: GyLhSQFKySUNloOOX832MQ
             Client: aUovw5WgoopgKfPlhe4Kfw
-            Uid: harrison@example.com
+            Uid: john.doe@example.com
             Token-Type: Bearer
             Expiry: 1481294000
 
     + Attributes (User Response)
 
 
-# Data Structures
 
-## Timestamps (object)
-- created_at: `2016-11-22T21:39:13Z`
-- updated_at: `2016-11-22T22:14:42Z`
+## Meal Resources [/meals]
+
+### Create New Meal [POST]
+
+When a meal is created, it is associated with the current user's account.
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: john.doe@example.com
+
+    + Attributes (Meal Request Parameters)
+
++ Response 201 (application/json)
+
+    + Attributes (Meal Response)
+
+### Retrieve Meal Record [GET /meals/{meal_id}]
+
+Users are only allowed to retrieve meals associated with their account.
+
++ Parameters
+
+    + meal_id: 1234 (number, required) - The ID of the meal record to be retrieved.
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: john.doe@example.com
+
++ Response 200 (application/json)
+
+    + Headers
+
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: john.doe@example.com
+            Token-Type: Bearer
+            Expiry: 1481294000
+
+    + Attributes (Meal Response)
+
+### Update Meal Record [PUT /meals/{meal_id}]
+
+Any subset of the supported meal attributes can be included in an update request and only those attributes will be modified.
+
++ Parameters
+
+    + meal_id: 1234 (number, required) - The ID of the meal record to be retrieved.
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: john.doe@example.com
+
+    + Attributes (Meal Request Parameters)
+
++ Response 200 (application/json)
+
+    + Headers
+
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: john.doe@example.com
+            Token-Type: Bearer
+            Expiry: 1481294000
+
+    + Attributes (Meal Response)
+
+### Delete Meal Record [DELETE /meals/{meal_id}]
+
++ Parameters
+
+    + meal_id: 1234 (number, required) - The ID of the meal record to be retrieved.
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: john.doe@example.com
+
++ Response 204 (application/json)
+
+    + Headers
+
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: john.doe@example.com
+            Token-Type: Bearer
+            Expiry: 1481294000
+
+
+
+# Data Structures
 
 ## User Base Attributes (object)
 - email: john.doe@example.com (string, required)
@@ -144,9 +249,20 @@ Users are only allowed to retrieve the details for their own user record.
 
 ## User Resource (User Base Attributes)
 - id: 1234 (number)
-- provider: email (string)
-- uid: john.doe@example.com (string)
-- Include Timestamps
+- created_at: `2016-11-22T21:39:13Z` (string)
 
 ## User Response (object)
 - data (User Resource)
+
+## Meal Base Attributes (object)
+- description: `Lunch at home.` (string, required)
+- calories: 736 (number, required)
+- occurred_at: `2016-11-22T21:39:13Z` (string, required)
+
+## Meal Request Parameters (Meal Base Attributes)
+
+## Meal Resource (Meal Base Attributes)
+- user (User Resource)
+
+## Meal Response (object)
+- data (Meal Resource)

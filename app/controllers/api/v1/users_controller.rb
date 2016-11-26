@@ -1,6 +1,6 @@
 module Api::V1
   class UsersController < ApiController
-    before_action :authenticate_user!, except: [ :create ]
+    skip_before_filter :authenticate_user!, only: [ :create ]
 
     def create
       user = User.new(params.permit(:email, :password, :name))

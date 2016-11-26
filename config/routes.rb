@@ -63,6 +63,8 @@ Rails.application.routes.draw do
                                     token_validations: 'api/v1/token_validations'
                                   }
       resources :users, only: [:create, :show]
+
+      resources :meals, only: [:create, :show, :update, :destroy]
     end
   end
 end
