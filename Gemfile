@@ -48,6 +48,7 @@ group :development, :test do
 
   # Automated test support
   gem 'rspec-rails'
+  gem 'database_cleaner'
   gem 'factory_girl_rails'
   gem 'faker'
 

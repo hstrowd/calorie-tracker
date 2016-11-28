@@ -7,5 +7,6 @@ class User < ActiveRecord::Base
 
   has_many :meals
 
-  validates_presence_of :name
+  validates_presence_of :name, :daily_calorie_target
+  validates :daily_calorie_target, numericality: { greater_than: 0, less_than: 10000 }
 end

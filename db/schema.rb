@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161125210919) do
+ActiveRecord::Schema.define(version: 20161128005624) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -28,19 +28,20 @@ ActiveRecord::Schema.define(version: 20161125210919) do
   add_index "meals", ["user_id", "occurred_at"], name: "index_meals_on_user_id_and_occurred_at", using: :btree
 
   create_table "users", force: :cascade do |t|
-    t.string   "provider",           default: "email", null: false
-    t.string   "uid",                default: "",      null: false
-    t.string   "encrypted_password", default: "",      null: false
-    t.integer  "sign_in_count",      default: 0,       null: false
+    t.string   "provider",             default: "email", null: false
+    t.string   "uid",                  default: "",      null: false
+    t.string   "encrypted_password",   default: "",      null: false
+    t.integer  "sign_in_count",        default: 0,       null: false
     t.datetime "current_sign_in_at"
     t.datetime "last_sign_in_at"
     t.string   "current_sign_in_ip"
     t.string   "last_sign_in_ip"
-    t.string   "email",                                null: false
-    t.string   "name",                                 null: false
+    t.string   "email",                                  null: false
+    t.string   "name",                                   null: false
     t.json     "tokens"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "daily_calorie_target", default: 1500,    null: false
   end
 
   add_index "users", ["email"], name: "index_users_on_email", using: :btree

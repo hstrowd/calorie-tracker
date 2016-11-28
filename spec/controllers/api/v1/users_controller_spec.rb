@@ -36,6 +36,7 @@ RSpec.describe Api::V1::UsersController do
         expect(json_body['data']['id']).to eq(new_user.id)
         expect(json_body['data']['name']).to eq(@new_user_attrs[:name])
         expect(json_body['data']['email']).to eq(@new_user_attrs[:email])
+        expect(json_body['data']['daily_calorie_target']).to eq(@new_user_attrs[:daily_calorie_target])
         expect(json_body['data']['created_at']).not_to be_blank
         expect(new_user.valid_password?(@new_user_attrs[:password])).to be_truthy
       end
@@ -69,12 +70,12 @@ RSpec.describe Api::V1::UsersController do
         end
       end
 
-      context 'missing attribute' do
+      context 'missing parameter' do
         before do
           @new_user_attrs = FactoryGirl.attributes_for(:user)
         end
 
-        %w(name email password).each do |attribute|
+        %w(name email password daily_calorie_target).each do |attribute|
           context "missing #{attribute}" do
             before do
               @new_user_attrs.delete(attribute.to_sym)
@@ -102,6 +103,34 @@ RSpec.describe Api::V1::UsersController do
           end
         end
       end
+
+      context 'invalid parameter' do
+        before do
+          @new_user_attrs = FactoryGirl.attributes_for(:user)
+        end
+
+        it 'return a 422 response if the calorie target too small' do
+          @new_user_attrs[:daily_calorie_target] = 0
+
+          post '/api/v1/users', @new_user_attrs
+
+          expect(last_response.status).to eq(422)
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['code']).to eq('invalid_request')
+          expect(json_body['error']).to match(/daily calorie target must be greater than/i)
+        end
+
+        it 'return a 422 response if the calorie target too large' do
+          @new_user_attrs[:daily_calorie_target] = 10000
+
+          post '/api/v1/users', @new_user_attrs
+
+          expect(last_response.status).to eq(422)
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['code']).to eq('invalid_request')
+          expect(json_body['error']).to match(/daily calorie target must be less than/i)
+        end
+      end
     end
   end
 
@@ -125,6 +154,7 @@ RSpec.describe Api::V1::UsersController do
         expect(json_body['data']['id']).to eq(@user.id)
         expect(json_body['data']['name']).to eq(@user.name)
         expect(json_body['data']['email']).to eq(@user.email)
+        expect(json_body['data']['daily_calorie_target']).to eq(@user.daily_calorie_target)
         expect(normalize_date_time(json_body['data']['created_at'])).to eq(normalize_date_time(@user.created_at))
       end
 

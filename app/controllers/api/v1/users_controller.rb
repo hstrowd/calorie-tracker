@@ -3,7 +3,7 @@ module Api::V1
     skip_before_filter :authenticate_user!, only: [ :create ]
 
     def create
-      user = User.new(params.permit(:email, :password, :name))
+      user = User.new(params.permit(:email, :password, :name, :daily_calorie_target))
       if user.save
         # email auth has been bypassed, authenticate user
         @client_id = SecureRandom.urlsafe_base64(nil, false)

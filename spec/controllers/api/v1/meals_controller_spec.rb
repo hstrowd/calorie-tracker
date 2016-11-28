@@ -16,9 +16,9 @@ RSpec.describe Api::V1::MealsController do
   context 'POST /api/v1/meals' do
     context 'success requsets' do
       before do
-        three_days_ago_date = 3.days.ago.to_date
-        two_days_ago_date = 2.days.ago.to_date
-        yesterday_date = Date.yesterday
+        three_days_ago_date = Date.today - 3.days
+        two_days_ago_date = Date.today - 2.days
+        yesterday_date = Date.today - 1.day
         today_date = Date.today
 
         breakfast_time = Time.parse('08:15:00')
@@ -109,7 +109,7 @@ RSpec.describe Api::V1::MealsController do
 
       context 'with start date' do
         it 'returns only meals that occured since the specified date, inclusively' do
-          get '/api/v1/meals', start_date: Date.yesterday.to_date.to_s
+          get '/api/v1/meals', start_date: (Date.today - 1.day)
 
           json_body = JSON.parse(last_response.body)
           expect(json_body['data'].length).to eq(3)
@@ -121,7 +121,7 @@ RSpec.describe Api::V1::MealsController do
 
       context ' with end date' do
         it 'returns only meals that occured up until the specified date, inclusively' do
-          get '/api/v1/meals', end_date: 2.days.ago.to_date.to_s
+          get '/api/v1/meals', end_date: (Date.today - 2.day)
 
           json_body = JSON.parse(last_response.body)
           expect(json_body['data'].length).to eq(3)
@@ -133,7 +133,7 @@ RSpec.describe Api::V1::MealsController do
 
       context 'with both start and end dates' do
         it 'returns only meals that occured between the specified dates, inclusively' do
-          get '/api/v1/meals', start_date: 2.days.ago.to_date.to_s, end_date: Date.yesterday.to_date.to_s
+          get '/api/v1/meals', start_date: (Date.today - 2.day), end_date: (Date.today - 1.day)
 
           json_body = JSON.parse(last_response.body)
           expect(json_body['data'].length).to eq(4)
