@@ -13,6 +13,233 @@ RSpec.describe Api::V1::MealsController do
     @user = create_and_auth_user
   end
 
+  context 'POST /api/v1/meals' do
+    context 'success requsets' do
+      before do
+        three_days_ago_date = 3.days.ago.to_date
+        two_days_ago_date = 2.days.ago.to_date
+        yesterday_date = Date.yesterday
+        today_date = Date.today
+
+        breakfast_time = Time.parse('08:15:00')
+        brunch_time = Time.parse('11:00:00')
+        lunch_time = Time.parse('12:30:00')
+        dinner_time = Time.parse('18:45:00')
+
+        three_days_ago_lunch_datetime = DateTime.parse("#{three_days_ago_date.to_s} #{lunch_time.hour}:#{lunch_time.min}:#{lunch_time.sec}")
+        @three_days_ago_lunch_meal = FactoryGirl.create(:meal, user: @user, occurred_at: three_days_ago_lunch_datetime)
+        two_days_ago_breakfast_datetime = DateTime.parse("#{two_days_ago_date.to_s} #{breakfast_time.hour}:#{breakfast_time.min}:#{breakfast_time.sec}")
+        @two_days_ago_breakfast_meal = FactoryGirl.create(:meal, user: @user, occurred_at: two_days_ago_breakfast_datetime)
+        two_days_ago_dinner_datetime = DateTime.parse("#{two_days_ago_date.to_s} #{dinner_time.hour}:#{dinner_time.min}:#{dinner_time.sec}")
+        @two_days_ago_dinner_meal = FactoryGirl.create(:meal, user: @user, occurred_at: two_days_ago_dinner_datetime)
+        yesterday_brunch_datetime = DateTime.parse("#{yesterday_date.to_s} #{brunch_time.hour}:#{brunch_time.min}:#{brunch_time.sec}")
+        @yesterday_brunch_meal = FactoryGirl.create(:meal, user: @user, occurred_at: yesterday_brunch_datetime)
+        yesterday_dinner_datetime = DateTime.parse("#{yesterday_date.to_s} #{dinner_time.hour}:#{dinner_time.min}:#{dinner_time.sec}")
+        @yesterday_dinner_meal = FactoryGirl.create(:meal, user: @user, occurred_at: yesterday_dinner_datetime)
+        today_breakfast_datetime = DateTime.parse("#{today_date.to_s} #{breakfast_time.hour}:#{breakfast_time.min}:#{breakfast_time.sec}")
+        @today_breakfast_meal = FactoryGirl.create(:meal, user: @user, occurred_at: today_breakfast_datetime)
+
+        @other_user_meal = FactoryGirl.create(:meal)
+      end
+
+      context 'default params' do
+        it 'returns a 201 response' do
+          get '/api/v1/meals'
+          expect(last_response.status).to eq(200)
+        end
+
+        it 'returns the Meal record details' do
+          get '/api/v1/meals'
+
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['data']).not_to be_empty
+          expect(json_body['data'].length).to eq(6)
+
+          expect(json_body['data'][0]['id']).to eq(@today_breakfast_meal.id)
+          expect(json_body['data'][1]['id']).to eq(@yesterday_dinner_meal.id)
+          expect(json_body['data'][2]['id']).to eq(@yesterday_brunch_meal.id)
+          expect(json_body['data'][3]['id']).to eq(@two_days_ago_dinner_meal.id)
+          expect(json_body['data'][4]['id']).to eq(@two_days_ago_breakfast_meal.id)
+          expect(json_body['data'][5]['id']).to eq(@three_days_ago_lunch_meal.id)
+        end
+      end
+
+      context 'with limit' do
+        it 'returns at most the specified number of records' do
+          get '/api/v1/meals', limit: 3
+
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['data'].length).to eq(3)
+          expect(json_body['data'][0]['id']).to eq(@today_breakfast_meal.id)
+          expect(json_body['data'][1]['id']).to eq(@yesterday_dinner_meal.id)
+          expect(json_body['data'][2]['id']).to eq(@yesterday_brunch_meal.id)
+        end
+      end
+
+      context 'with page' do
+        it 'returns the specified page of records' do
+          get '/api/v1/meals', limit: 2, page: 2
+
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['data'].length).to eq(2)
+          expect(json_body['data'][0]['id']).to eq(@yesterday_brunch_meal.id)
+          expect(json_body['data'][1]['id']).to eq(@two_days_ago_dinner_meal.id)
+        end
+
+        context 'last page' do
+          it 'returns a partial page of records' do
+            get '/api/v1/meals', limit: 4, page: 2
+
+            json_body = JSON.parse(last_response.body)
+            expect(json_body['data'].length).to eq(2)
+            expect(json_body['data'][0]['id']).to eq(@two_days_ago_breakfast_meal.id)
+            expect(json_body['data'][1]['id']).to eq(@three_days_ago_lunch_meal.id)
+          end
+        end
+
+        context 'beyond last page' do
+          it 'returns a no records' do
+            get '/api/v1/meals', limit: 3, page: 3
+
+            json_body = JSON.parse(last_response.body)
+            expect(json_body['data']).to be_empty
+          end
+        end
+      end
+
+      context 'with start date' do
+        it 'returns only meals that occured since the specified date, inclusively' do
+          get '/api/v1/meals', start_date: Date.yesterday.to_date.to_s
+
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['data'].length).to eq(3)
+          expect(json_body['data'][0]['id']).to eq(@today_breakfast_meal.id)
+          expect(json_body['data'][1]['id']).to eq(@yesterday_dinner_meal.id)
+          expect(json_body['data'][2]['id']).to eq(@yesterday_brunch_meal.id)
+        end
+      end
+
+      context ' with end date' do
+        it 'returns only meals that occured up until the specified date, inclusively' do
+          get '/api/v1/meals', end_date: 2.days.ago.to_date.to_s
+
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['data'].length).to eq(3)
+          expect(json_body['data'][0]['id']).to eq(@two_days_ago_dinner_meal.id)
+          expect(json_body['data'][1]['id']).to eq(@two_days_ago_breakfast_meal.id)
+          expect(json_body['data'][2]['id']).to eq(@three_days_ago_lunch_meal.id)
+        end
+      end
+
+      context 'with both start and end dates' do
+        it 'returns only meals that occured between the specified dates, inclusively' do
+          get '/api/v1/meals', start_date: 2.days.ago.to_date.to_s, end_date: Date.yesterday.to_date.to_s
+
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['data'].length).to eq(4)
+          expect(json_body['data'][0]['id']).to eq(@yesterday_dinner_meal.id)
+          expect(json_body['data'][1]['id']).to eq(@yesterday_brunch_meal.id)
+          expect(json_body['data'][2]['id']).to eq(@two_days_ago_dinner_meal.id)
+          expect(json_body['data'][3]['id']).to eq(@two_days_ago_breakfast_meal.id)
+        end
+      end
+
+      context 'with start hour' do
+        it 'returns only meals that occured since the specified hour of the day, inclusively' do
+          get '/api/v1/meals', start_hour: 11
+
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['data'].length).to eq(4)
+          expect(json_body['data'][0]['id']).to eq(@yesterday_dinner_meal.id)
+          expect(json_body['data'][1]['id']).to eq(@yesterday_brunch_meal.id)
+          expect(json_body['data'][2]['id']).to eq(@two_days_ago_dinner_meal.id)
+          expect(json_body['data'][3]['id']).to eq(@three_days_ago_lunch_meal.id)
+        end
+      end
+
+      context ' with end hour' do
+        it 'returns only meals that occured up until the specified hour of the day, inclusively' do
+          get '/api/v1/meals', end_hour: 12
+
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['data'].length).to eq(4)
+          expect(json_body['data'][0]['id']).to eq(@today_breakfast_meal.id)
+          expect(json_body['data'][1]['id']).to eq(@yesterday_brunch_meal.id)
+          expect(json_body['data'][2]['id']).to eq(@two_days_ago_breakfast_meal.id)
+          expect(json_body['data'][3]['id']).to eq(@three_days_ago_lunch_meal.id)
+        end
+      end
+
+      context ' with start and end hour' do
+        it 'returns only meals that occured between the specified hours of the day, inclusively' do
+          get '/api/v1/meals', start_hour: 10, end_hour: 14
+
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['data'].length).to eq(2)
+          expect(json_body['data'][0]['id']).to eq(@yesterday_brunch_meal.id)
+          expect(json_body['data'][1]['id']).to eq(@three_days_ago_lunch_meal.id)
+        end
+      end
+    end
+
+    context 'failure requests' do
+      context 'invalid parameter inputs' do
+        it 'returns a 422 if the limit is not an integer' do
+          get '/api/v1/meals', limit: 'foo'
+
+          expect(last_response.status).to eq(422)
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['code']).to eq('invalid_request')
+          expect(json_body['error']).to match(/invalid limit/i)
+        end
+
+        it 'returns a 422 if the page is not an integer' do
+          get '/api/v1/meals', page: 'foo'
+
+          expect(last_response.status).to eq(422)
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['code']).to eq('invalid_request')
+          expect(json_body['error']).to match(/invalid page/i)
+        end
+
+        it 'returns a 422 if the start date is not an date' do
+          get '/api/v1/meals', start_date: 'foo'
+
+          expect(last_response.status).to eq(422)
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['code']).to eq('invalid_request')
+          expect(json_body['error']).to match(/invalid date/i)
+        end
+
+        it 'returns a 422 if the end date is not an date' do
+          get '/api/v1/meals', end_date: 'foo'
+
+          expect(last_response.status).to eq(422)
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['code']).to eq('invalid_request')
+          expect(json_body['error']).to match(/invalid date/i)
+        end
+
+        it 'returns a 422 if the start hour is not an integer' do
+          get '/api/v1/meals', start_hour: 'foo'
+
+          expect(last_response.status).to eq(422)
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['code']).to eq('invalid_request')
+          expect(json_body['error']).to match(/invalid start hour/i)
+        end
+
+        it 'returns a 422 if the end hour is not an integer' do
+          get '/api/v1/meals', end_hour: 'foo'
+
+          expect(last_response.status).to eq(422)
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['code']).to eq('invalid_request')
+          expect(json_body['error']).to match(/invalid end hour/i)
+        end
+      end
+    end
+  end
 
   context 'POST /api/v1/meals' do
     context 'success requsets' do

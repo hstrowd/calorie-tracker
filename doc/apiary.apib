@@ -128,6 +128,32 @@ Users are only allowed to retrieve the details for their own user record.
 
 ## Meal Resources [/meals]
 
+### Lookup Meals [GET /meals{?limit}{?page}{?start_date}{?end_date}{?start_hour}{?end_hour}]
+
+Retrieves a set of meals for the current user. Orders the results in descending order by the date of occurance.
+
++ Parameters
+
+    + limit: 50 (number) - The number of records to be returned. Minimum: 1; Maximum: 999; Default: 50
+    + page: 1 (number) - The page of results in the resultset to be returned. Minimum: 1; Default: 1
+    + start_date: `2016-11-22` (string) - The earliest date of occurance for meals to be included in the resultset, inclusively.
+    + end_date: `2016-11-22` (string) - The latest date of occurance for meals to be included in the resultset, inclusively.
+    + start_hour: 0 (number) - The earliest hour of the day for the occurance of meals to be included in the resultset, inclusively. Minimum: 0; Maximum: 23
+    + end_hour: 23 (number) - The latest hour of the day for the occurance of meals to be included in the resultset, inclusively. Minimum: 0; Maximum: 23
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: john.doe@example.com
+
++ Response 200 (application/json)
+
+    + Attributes (Meals Response)
+
 ### Create New Meal [POST]
 
 When a meal is created, it is associated with the current user's account.
@@ -266,3 +292,6 @@ Any subset of the supported meal attributes can be included in an update request
 
 ## Meal Response (object)
 - data (Meal Resource)
+
+## Meals Response (object)
+- data (array[Meal Resource])

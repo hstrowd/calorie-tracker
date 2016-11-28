@@ -64,7 +64,7 @@ Rails.application.routes.draw do
                                   }
       resources :users, only: [:create, :show]
 
-      resources :meals, only: [:create, :show, :update, :destroy]
+      resources :meals, only: [:index, :create, :show, :update, :destroy]
     end
   end
 end

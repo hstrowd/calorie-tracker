@@ -1,6 +1,57 @@
 module Api::V1
   class MealsController < ApiController
-    before_action :lookup_meal, except: [ :create ]
+    before_action :lookup_meal, except: [ :index, :create ]
+
+    def index
+      begin
+        page_size = params[:limit]&.to_i || 50
+        if page_size.present? && (page_size < 1 || page_size > 1000)
+          raise 'Invalid Limit Value. Must be an integer between 1 and 1000, inclusive.'
+        end
+        page = params[:page]&.to_i || 1
+        if page.present? && page < 1
+          raise 'Invalid Page Value. Must be greater than or equal to 1.'
+        end
+
+        start_date = params[:start_date]&.to_date
+        end_date = params[:end_date]&.to_date
+
+        start_hour = params[:start_hour]&.to_i
+        if start_hour.present? && (start_hour.to_s != params[:start_hour] || start_hour < 0 || start_hour > 23)
+          raise 'Invalid Start Hour Value. Must be an integer between 0 and 23, inclusive.'
+        end
+
+        end_hour = params[:end_hour]&.to_i
+        if end_hour.present? && (end_hour.to_s != params[:end_hour] || end_hour < 0 || end_hour > 23)
+          raise 'Invalid End Hour Value. Must be an integer between 0 and 23, inclusive.'
+        end
+      rescue StandardError => e
+        render json: { code: 'invalid_request', error: "Invalid request parameters: #{e.message}"}, status: 422
+        return
+      end
+
+      meals = Meal.where(user: current_user)
+
+      if start_date.present?
+        meals = meals.where("DATE_TRUNC('DAY', occurred_at) >= ?", start_date)
+      end
+      if end_date.present?
+        meals = meals.where("DATE_TRUNC('DAY', occurred_at) <= ?", end_date)
+      end
+
+      if start_hour.present?
+        meals = meals.where("DATE_PART('HOUR', occurred_at) >= ?", start_hour)
+      end
+      if end_hour.present?
+        meals = meals.where("DATE_PART('HOUR', occurred_at) <= ?", end_hour)
+      end
+
+      meals = meals.order(occurred_at: :desc)
+              .limit(page_size)
+              .offset((page - 1) * page_size)
+
+      render json: { data: meals }
+    end
 
     def create
       meal_attrs = { user: current_user }.merge(permitted_params)
