@@ -5,6 +5,13 @@ HOST: https://calorietracker.com/api/v1/
 
 The API for a personal calorie tracking service.
 
+This system supports the following three roles for access control:
+
+* Basic(`basic`): Basic users are allowed to fully operate on their own account and meals. They can update their account details, create new meals, modify their existing meals, delete their meals, and delete their own account.
+* User Manager(`user_manager`): User manager users are allowed to fully operate on their own account, but in addition can manage the account details for other users' accounts, including creating new accounts with the basic or user manager roles, modifying existing account, and/or deleting accounts. They are not permitted to modify the meal information for any user accounts other than their own and are not permitted to create new users with the admin role.
+* Admin (`admin`): Admin users are allowed to perform all operations on any user or meal record within the system, including creating new users with any role, updating user accounts, deleting user accounts, creating new meal recorcds, modifying existing meal records, and/or deleting meal records.
+
+
 ## Authentication [/auth]
 
 ### Sign In [POST /auth/sign_in]
@@ -81,15 +88,44 @@ Any successful request that authenticates the user using this token, will update
 
 ## User Resources [/users]
 
-### Create New User [POST]
+### List Users [GET /users{?limit}{?page}]
+
+Retrieves all user accounts within the system. The results are orded by their creation date it descending order.
+
++ Parameters
+
+    + limit: 50 (number) - The number of records to be returned. Minimum: 1; Maximum: 999; Default: 50
+    + page: 1 (number) - The page of results in the resultset to be returned. Minimum: 1; Default: 1
 
 + Request
 
     + Headers
 
             Content-Type: application/json
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: john.doe@example.com
+
++ Response 200 (application/json)
+
+    + Attributes (Users Response)
+
+### Create New User [POST]
+
+Authentication headers can be included or omitted for new user requests. When omitted, a new basic user account will be created and automatically logged in. When included, a new account will be created, but the current user will remain logged in. If the associated account is a user manager or admin user, they will be permitted to create user accounts with a role up to their own access level.
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: john.doe@example.com
 
     + Attributes (User Create Parameters)
+
+        + role: basic - Only used by user manager and admin user requests.
 
 + Response 201 (application/json)
 
@@ -97,7 +133,7 @@ Any successful request that authenticates the user using this token, will update
 
 ### Retrieve User Record [GET /users/{user_id}]
 
-Users are only allowed to retrieve the details for their own user record.
+Basic users are only allowed to retrieve the details for their own user record.
 
 + Parameters
 
@@ -124,13 +160,72 @@ Users are only allowed to retrieve the details for their own user record.
 
     + Attributes (User Response)
 
+### Update User Record [PUT /users/{user_id}]
+
+Basic users are only allowed to update their own user record.
+
++ Parameters
+
+    + user_id: 1234 (number, required) - The ID of the user record to be updated.
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: john.doe@example.com
+
+    + Attributes (User Update Parameters)
+
+        + role: basic - Only used by user manager and admin user requests.
+
++ Response 200 (application/json)
+
+    + Headers
+
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: john.doe@example.com
+            Token-Type: Bearer
+            Expiry: 1481294000
+
+    + Attributes (User Response)
+
+### Delete User Record [DELETE /users/{user_id}]
+
+Basic users are only allowed to delete their own user record. When a basic user deletes their own account, they will automatically be logged out.
+
++ Parameters
+
+    + user_id: 1234 (number, required) - The ID of the user record to be updated.
+
++ Request
+
+    + Headers
+
+            Content-Type: application/json
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: john.doe@example.com
+
++ Response 204 (application/json)
+
+    + Headers
+
+            Access-Token: GyLhSQFKySUNloOOX832MQ
+            Client: aUovw5WgoopgKfPlhe4Kfw
+            Uid: john.doe@example.com
+            Token-Type: Bearer
+            Expiry: 1481294000
 
 
 ## Meal Resources [/meals]
 
-### Lookup Meals [GET /meals{?limit}{?page}{?start_date}{?end_date}{?start_hour}{?end_hour}]
+### List Meals [GET /meals{?limit}{?page}{?start_date}{?end_date}{?start_hour}{?end_hour}{?user_id}]
 
-Retrieves a set of meals for the current user. Orders the results in descending order by the date of occurance.
+Retrieves a set of meals for a given user. Basic users are only allowed to retrieve their own meals. The results are ordered in descending order by the date of occurance.
 
 + Parameters
 
@@ -140,6 +235,7 @@ Retrieves a set of meals for the current user. Orders the results in descending 
     + end_date: `2016-11-22` (string) - The latest date of occurance for meals to be included in the resultset, inclusively.
     + start_hour: 0 (number) - The earliest hour of the day for the occurance of meals to be included in the resultset, inclusively. Minimum: 0; Maximum: 23
     + end_hour: 23 (number) - The latest hour of the day for the occurance of meals to be included in the resultset, inclusively. Minimum: 0; Maximum: 23
+    + user_id: 1234 (number) - The ID of the user whose meals should be included in the resultset. Only used by user manager and admin user requests.
 
 + Request
 
@@ -156,7 +252,7 @@ Retrieves a set of meals for the current user. Orders the results in descending 
 
 ### Create New Meal [POST]
 
-When a meal is created, it is associated with the current user's account.
+Basic users are only allowed to create meals for their own account.
 
 + Request
 
@@ -169,13 +265,15 @@ When a meal is created, it is associated with the current user's account.
 
     + Attributes (Meal Request Parameters)
 
+        + user_id: 1234 (number) - Only used by user manager and admin user requests.
+
 + Response 201 (application/json)
 
     + Attributes (Meal Response)
 
 ### Retrieve Meal Record [GET /meals/{meal_id}]
 
-Users are only allowed to retrieve meals associated with their account.
+Basic users are only allowed to retrieve meals for their own account.
 
 + Parameters
 
@@ -204,11 +302,11 @@ Users are only allowed to retrieve meals associated with their account.
 
 ### Update Meal Record [PUT /meals/{meal_id}]
 
-Any subset of the supported meal attributes can be included in an update request and only those attributes will be modified.
+Basic users are only allowed to update meals for their own account. Any subset of the supported meal attributes can be included in an update request and only those attributes will be modified.
 
 + Parameters
 
-    + meal_id: 1234 (number, required) - The ID of the meal record to be retrieved.
+    + meal_id: 1234 (number, required) - The ID of the meal record to be updated.
 
 + Request
 
@@ -220,6 +318,8 @@ Any subset of the supported meal attributes can be included in an update request
             Uid: john.doe@example.com
 
     + Attributes (Meal Request Parameters)
+
+        + user_id: 1234 (number) - Only used by user manager and admin user requests.
 
 + Response 200 (application/json)
 
@@ -234,6 +334,8 @@ Any subset of the supported meal attributes can be included in an update request
     + Attributes (Meal Response)
 
 ### Delete Meal Record [DELETE /meals/{meal_id}]
+
+Basic users are only allowed to delete meals for their own account.
 
 + Parameters
 
@@ -266,9 +368,12 @@ Any subset of the supported meal attributes can be included in an update request
 - email: john.doe@example.com (string, required)
 - name: `John Doe` (string, required)
 - daily_calorie_target: 1750 (number, required)
+- role: basic (string)
 
 ## User Create Parameters (User Base Attributes)
 - password: Pa$$word1234 (string, required)
+
+## User Update Parameters (User Base Attributes)
 
 ## User Authentication Parameters (object)
 - email: john.doe@example.com (string, required)
@@ -281,12 +386,16 @@ Any subset of the supported meal attributes can be included in an update request
 ## User Response (object)
 - data (User Resource)
 
+## Users Response (object)
+- data (array[User Resource])
+
 ## Meal Base Attributes (object)
 - description: `Lunch at home.` (string, required)
 - calories: 736 (number, required)
 - occurred_at: `2016-11-22T21:39:13Z` (string, required)
 
 ## Meal Request Parameters (Meal Base Attributes)
+- user_id: 1234 (number)
 
 ## Meal Resource (Meal Base Attributes)
 - user (User Resource)

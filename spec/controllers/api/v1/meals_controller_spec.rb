@@ -42,142 +42,180 @@ RSpec.describe Api::V1::MealsController do
         @other_user_meal = FactoryGirl.create(:meal)
       end
 
-      context 'default params' do
-        it 'returns a 201 response' do
-          get '/api/v1/meals'
-          expect(last_response.status).to eq(200)
+      context 'non-admin users' do
+        context 'default params' do
+          it 'returns a 20 response' do
+            get '/api/v1/meals'
+            expect(last_response.status).to eq(200)
+          end
+
+          it 'returns all Meal records for the current user' do
+            get '/api/v1/meals'
+
+            json_body = JSON.parse(last_response.body)
+            expect(json_body['data']).not_to be_empty
+            expect(json_body['data'].length).to eq(6)
+
+            expect(json_body['data'][0]['id']).to eq(@today_breakfast_meal.id)
+            expect(json_body['data'][1]['id']).to eq(@yesterday_dinner_meal.id)
+            expect(json_body['data'][2]['id']).to eq(@yesterday_brunch_meal.id)
+            expect(json_body['data'][3]['id']).to eq(@two_days_ago_dinner_meal.id)
+            expect(json_body['data'][4]['id']).to eq(@two_days_ago_breakfast_meal.id)
+            expect(json_body['data'][5]['id']).to eq(@three_days_ago_lunch_meal.id)
+          end
+
+          it 'returns the Meal record details' do
+            get '/api/v1/meals'
+
+            json_body = JSON.parse(last_response.body)
+            expect(json_body['data']).not_to be_empty
+            expect(json_body['data'][0]['id']).to eq(@today_breakfast_meal.id)
+            expect(json_body['data'][0]['description']).to eq(@today_breakfast_meal.description)
+            expect(json_body['data'][0]['calories']).to eq(@today_breakfast_meal.calories)
+            expect(normalize_date_time(json_body['data'][0]['occurred_at'])).to eq(normalize_date_time(@today_breakfast_meal.occurred_at))
+
+            expect(json_body['data'][0]['user']).not_to be_empty
+            expect(json_body['data'][0]['user']['id']).to eq(@today_breakfast_meal.user.id)
+          end
         end
 
-        it 'returns the Meal record details' do
-          get '/api/v1/meals'
+        context 'with limit' do
+          it 'returns at most the specified number of records' do
+            get '/api/v1/meals', limit: 3
 
-          json_body = JSON.parse(last_response.body)
-          expect(json_body['data']).not_to be_empty
-          expect(json_body['data'].length).to eq(6)
-
-          expect(json_body['data'][0]['id']).to eq(@today_breakfast_meal.id)
-          expect(json_body['data'][1]['id']).to eq(@yesterday_dinner_meal.id)
-          expect(json_body['data'][2]['id']).to eq(@yesterday_brunch_meal.id)
-          expect(json_body['data'][3]['id']).to eq(@two_days_ago_dinner_meal.id)
-          expect(json_body['data'][4]['id']).to eq(@two_days_ago_breakfast_meal.id)
-          expect(json_body['data'][5]['id']).to eq(@three_days_ago_lunch_meal.id)
-        end
-      end
-
-      context 'with limit' do
-        it 'returns at most the specified number of records' do
-          get '/api/v1/meals', limit: 3
-
-          json_body = JSON.parse(last_response.body)
-          expect(json_body['data'].length).to eq(3)
-          expect(json_body['data'][0]['id']).to eq(@today_breakfast_meal.id)
-          expect(json_body['data'][1]['id']).to eq(@yesterday_dinner_meal.id)
-          expect(json_body['data'][2]['id']).to eq(@yesterday_brunch_meal.id)
-        end
-      end
-
-      context 'with page' do
-        it 'returns the specified page of records' do
-          get '/api/v1/meals', limit: 2, page: 2
-
-          json_body = JSON.parse(last_response.body)
-          expect(json_body['data'].length).to eq(2)
-          expect(json_body['data'][0]['id']).to eq(@yesterday_brunch_meal.id)
-          expect(json_body['data'][1]['id']).to eq(@two_days_ago_dinner_meal.id)
+            json_body = JSON.parse(last_response.body)
+            expect(json_body['data'].length).to eq(3)
+            expect(json_body['data'][0]['id']).to eq(@today_breakfast_meal.id)
+            expect(json_body['data'][1]['id']).to eq(@yesterday_dinner_meal.id)
+            expect(json_body['data'][2]['id']).to eq(@yesterday_brunch_meal.id)
+          end
         end
 
-        context 'last page' do
-          it 'returns a partial page of records' do
-            get '/api/v1/meals', limit: 4, page: 2
+        context 'with page' do
+          it 'returns the specified page of records' do
+            get '/api/v1/meals', limit: 2, page: 2
 
             json_body = JSON.parse(last_response.body)
             expect(json_body['data'].length).to eq(2)
-            expect(json_body['data'][0]['id']).to eq(@two_days_ago_breakfast_meal.id)
+            expect(json_body['data'][0]['id']).to eq(@yesterday_brunch_meal.id)
+            expect(json_body['data'][1]['id']).to eq(@two_days_ago_dinner_meal.id)
+          end
+
+          context 'last page' do
+            it 'returns a partial page of records' do
+              get '/api/v1/meals', limit: 4, page: 2
+
+              json_body = JSON.parse(last_response.body)
+              expect(json_body['data'].length).to eq(2)
+              expect(json_body['data'][0]['id']).to eq(@two_days_ago_breakfast_meal.id)
+              expect(json_body['data'][1]['id']).to eq(@three_days_ago_lunch_meal.id)
+            end
+          end
+
+          context 'beyond last page' do
+            it 'returns a no records' do
+              get '/api/v1/meals', limit: 3, page: 3
+
+              json_body = JSON.parse(last_response.body)
+              expect(json_body['data']).to be_empty
+            end
+          end
+        end
+
+        context 'with start date' do
+          it 'returns only meals that occured since the specified date, inclusively' do
+            get '/api/v1/meals', start_date: (Date.today - 1.day)
+
+            json_body = JSON.parse(last_response.body)
+            expect(json_body['data'].length).to eq(3)
+            expect(json_body['data'][0]['id']).to eq(@today_breakfast_meal.id)
+            expect(json_body['data'][1]['id']).to eq(@yesterday_dinner_meal.id)
+            expect(json_body['data'][2]['id']).to eq(@yesterday_brunch_meal.id)
+          end
+        end
+
+        context ' with end date' do
+          it 'returns only meals that occured up until the specified date, inclusively' do
+            get '/api/v1/meals', end_date: (Date.today - 2.day)
+
+            json_body = JSON.parse(last_response.body)
+            expect(json_body['data'].length).to eq(3)
+            expect(json_body['data'][0]['id']).to eq(@two_days_ago_dinner_meal.id)
+            expect(json_body['data'][1]['id']).to eq(@two_days_ago_breakfast_meal.id)
+            expect(json_body['data'][2]['id']).to eq(@three_days_ago_lunch_meal.id)
+          end
+        end
+
+        context 'with both start and end dates' do
+          it 'returns only meals that occured between the specified dates, inclusively' do
+            get '/api/v1/meals', start_date: (Date.today - 2.day), end_date: (Date.today - 1.day)
+
+            json_body = JSON.parse(last_response.body)
+            expect(json_body['data'].length).to eq(4)
+            expect(json_body['data'][0]['id']).to eq(@yesterday_dinner_meal.id)
+            expect(json_body['data'][1]['id']).to eq(@yesterday_brunch_meal.id)
+            expect(json_body['data'][2]['id']).to eq(@two_days_ago_dinner_meal.id)
+            expect(json_body['data'][3]['id']).to eq(@two_days_ago_breakfast_meal.id)
+          end
+        end
+
+        context 'with start hour' do
+          it 'returns only meals that occured since the specified hour of the day, inclusively' do
+            get '/api/v1/meals', start_hour: 11
+
+            json_body = JSON.parse(last_response.body)
+            expect(json_body['data'].length).to eq(4)
+            expect(json_body['data'][0]['id']).to eq(@yesterday_dinner_meal.id)
+            expect(json_body['data'][1]['id']).to eq(@yesterday_brunch_meal.id)
+            expect(json_body['data'][2]['id']).to eq(@two_days_ago_dinner_meal.id)
+            expect(json_body['data'][3]['id']).to eq(@three_days_ago_lunch_meal.id)
+          end
+        end
+
+        context 'with end hour' do
+          it 'returns only meals that occured up until the specified hour of the day, inclusively' do
+            get '/api/v1/meals', end_hour: 12
+
+            json_body = JSON.parse(last_response.body)
+            expect(json_body['data'].length).to eq(4)
+            expect(json_body['data'][0]['id']).to eq(@today_breakfast_meal.id)
+            expect(json_body['data'][1]['id']).to eq(@yesterday_brunch_meal.id)
+            expect(json_body['data'][2]['id']).to eq(@two_days_ago_breakfast_meal.id)
+            expect(json_body['data'][3]['id']).to eq(@three_days_ago_lunch_meal.id)
+          end
+        end
+
+        context 'with start and end hour' do
+          it 'returns only meals that occured between the specified hours of the day, inclusively' do
+            get '/api/v1/meals', start_hour: 10, end_hour: 14
+
+            json_body = JSON.parse(last_response.body)
+            expect(json_body['data'].length).to eq(2)
+            expect(json_body['data'][0]['id']).to eq(@yesterday_brunch_meal.id)
             expect(json_body['data'][1]['id']).to eq(@three_days_ago_lunch_meal.id)
           end
         end
 
-        context 'beyond last page' do
-          it 'returns a no records' do
-            get '/api/v1/meals', limit: 3, page: 3
+        context 'with user ID' do
+          it 'ignores the specified user ID' do
+            get '/api/v1/meals', user_id: @other_user_meal.user.id
 
             json_body = JSON.parse(last_response.body)
-            expect(json_body['data']).to be_empty
+            expect(json_body['data'].length).to eq(6)
+            expect(json_body['data'][0]['id']).to eq(@today_breakfast_meal.id)
           end
         end
       end
 
-      context 'with start date' do
-        it 'returns only meals that occured since the specified date, inclusively' do
-          get '/api/v1/meals', start_date: (Date.today - 1.day)
+      context 'admin users' do
+        it 'allows other users\' meals to be retrieved' do
+          @user.update_attribute(:role, User::ADMIN_ROLE)
 
-          json_body = JSON.parse(last_response.body)
-          expect(json_body['data'].length).to eq(3)
-          expect(json_body['data'][0]['id']).to eq(@today_breakfast_meal.id)
-          expect(json_body['data'][1]['id']).to eq(@yesterday_dinner_meal.id)
-          expect(json_body['data'][2]['id']).to eq(@yesterday_brunch_meal.id)
-        end
-      end
+          get '/api/v1/meals', user_id: @other_user_meal.user.id
 
-      context ' with end date' do
-        it 'returns only meals that occured up until the specified date, inclusively' do
-          get '/api/v1/meals', end_date: (Date.today - 2.day)
-
-          json_body = JSON.parse(last_response.body)
-          expect(json_body['data'].length).to eq(3)
-          expect(json_body['data'][0]['id']).to eq(@two_days_ago_dinner_meal.id)
-          expect(json_body['data'][1]['id']).to eq(@two_days_ago_breakfast_meal.id)
-          expect(json_body['data'][2]['id']).to eq(@three_days_ago_lunch_meal.id)
-        end
-      end
-
-      context 'with both start and end dates' do
-        it 'returns only meals that occured between the specified dates, inclusively' do
-          get '/api/v1/meals', start_date: (Date.today - 2.day), end_date: (Date.today - 1.day)
-
-          json_body = JSON.parse(last_response.body)
-          expect(json_body['data'].length).to eq(4)
-          expect(json_body['data'][0]['id']).to eq(@yesterday_dinner_meal.id)
-          expect(json_body['data'][1]['id']).to eq(@yesterday_brunch_meal.id)
-          expect(json_body['data'][2]['id']).to eq(@two_days_ago_dinner_meal.id)
-          expect(json_body['data'][3]['id']).to eq(@two_days_ago_breakfast_meal.id)
-        end
-      end
-
-      context 'with start hour' do
-        it 'returns only meals that occured since the specified hour of the day, inclusively' do
-          get '/api/v1/meals', start_hour: 11
-
-          json_body = JSON.parse(last_response.body)
-          expect(json_body['data'].length).to eq(4)
-          expect(json_body['data'][0]['id']).to eq(@yesterday_dinner_meal.id)
-          expect(json_body['data'][1]['id']).to eq(@yesterday_brunch_meal.id)
-          expect(json_body['data'][2]['id']).to eq(@two_days_ago_dinner_meal.id)
-          expect(json_body['data'][3]['id']).to eq(@three_days_ago_lunch_meal.id)
-        end
-      end
-
-      context ' with end hour' do
-        it 'returns only meals that occured up until the specified hour of the day, inclusively' do
-          get '/api/v1/meals', end_hour: 12
-
-          json_body = JSON.parse(last_response.body)
-          expect(json_body['data'].length).to eq(4)
-          expect(json_body['data'][0]['id']).to eq(@today_breakfast_meal.id)
-          expect(json_body['data'][1]['id']).to eq(@yesterday_brunch_meal.id)
-          expect(json_body['data'][2]['id']).to eq(@two_days_ago_breakfast_meal.id)
-          expect(json_body['data'][3]['id']).to eq(@three_days_ago_lunch_meal.id)
-        end
-      end
-
-      context ' with start and end hour' do
-        it 'returns only meals that occured between the specified hours of the day, inclusively' do
-          get '/api/v1/meals', start_hour: 10, end_hour: 14
-
-          json_body = JSON.parse(last_response.body)
-          expect(json_body['data'].length).to eq(2)
-          expect(json_body['data'][0]['id']).to eq(@yesterday_brunch_meal.id)
-          expect(json_body['data'][1]['id']).to eq(@three_days_ago_lunch_meal.id)
+            json_body = JSON.parse(last_response.body)
+            expect(json_body['data'].length).to eq(1)
+            expect(json_body['data'][0]['id']).to eq(@other_user_meal.id)
         end
       end
     end
@@ -238,49 +276,85 @@ RSpec.describe Api::V1::MealsController do
           expect(json_body['error']).to match(/invalid end hour/i)
         end
       end
+
+      it 'return a 404 response when the user requested by an admin user is not found' do
+        @user.update_attribute(:role, User::ADMIN_ROLE)
+        get '/api/v1/meals', user_id: 987
+
+        expect(last_response.status).to eq(404)
+        json_body = JSON.parse(last_response.body)
+        expect(json_body['code']).to eq('not_found')
+        expect(json_body['error']).to match(/user.*not found/i)
+      end
     end
   end
 
   context 'POST /api/v1/meals' do
     context 'success requsets' do
-      before do
-        @new_meal_attrs = FactoryGirl.attributes_for(:meal)
-      end
+      context 'non-admin users' do
+        before do
+          @new_meal_attrs = FactoryGirl.attributes_for(:meal, user: @user)
+        end
 
-      it 'creates a meal User record' do
-        expect {
+        it 'creates a meal User record' do
+          expect {
+            post '/api/v1/meals', @new_meal_attrs
+          }.to change{Meal.count}.by(1)
+        end
+
+        it 'returns a 201 response' do
           post '/api/v1/meals', @new_meal_attrs
-        }.to change{Meal.count}.by(1)
+
+          expect(last_response.status).to eq(201)
+        end
+
+        it 'returns the Meal record details' do
+          post '/api/v1/meals', @new_meal_attrs
+
+          new_meal = Meal.last
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['data']).not_to be_empty
+          expect(json_body['data']['id']).to eq(new_meal.id)
+          expect(json_body['data']['description']).to eq(@new_meal_attrs[:description])
+          expect(json_body['data']['calories']).to eq(@new_meal_attrs[:calories])
+          expect(normalize_date_time(json_body['data']['occurred_at'])).to eq(normalize_date_time(@new_meal_attrs[:occurred_at]))
+
+          expect(json_body['data']['user']).not_to be_empty
+          expect(json_body['data']['user']['id']).to eq(@user.id)
+        end
       end
 
-      it 'returns a 201 response' do
-        post '/api/v1/meals', @new_meal_attrs
+      context 'admin users' do
+        before do
+          @user.update_attribute(:role, User::ADMIN_ROLE)
+          @other_user = FactoryGirl.create(:user)
+          @new_meal_attrs = FactoryGirl.attributes_for(:meal)
+          @new_meal_attrs[:user_id] = @other_user.id
+        end
 
-        expect(last_response.status).to eq(201)
-      end
+        it 'permits the creation of Meal records for other users' do
+          expect {
+            post '/api/v1/meals', @new_meal_attrs
+          }.to change{Meal.count}.by(1)
 
-      it 'returns the Meal record details' do
-        post '/api/v1/meals', @new_meal_attrs
+          expect(last_response.status).to eq(201)
+          new_meal = Meal.last
+          expect(new_meal.user).to eq(@other_user)
 
-        new_meal = Meal.last
-        json_body = JSON.parse(last_response.body)
-        expect(json_body['data']).not_to be_empty
-        expect(json_body['data']['id']).to eq(new_meal.id)
-        expect(json_body['data']['description']).to eq(@new_meal_attrs[:description])
-        expect(json_body['data']['calories']).to eq(@new_meal_attrs[:calories])
-        expect(normalize_date_time(json_body['data']['occurred_at'])).to eq(normalize_date_time(@new_meal_attrs[:occurred_at]))
-
-        expect(json_body['data']['user']).not_to be_empty
-        expect(json_body['data']['user']['id']).to eq(@user.id)
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['data']).not_to be_empty
+          expect(json_body['data']['user']).not_to be_empty
+          expect(json_body['data']['user']['id']).to eq(@other_user.id)
+        end
       end
     end
 
     context 'failure requests' do
-      context 'missing attribute' do
-        before do
-          @new_meal_attrs = FactoryGirl.attributes_for(:meal)
-        end
+      before do
+        @new_meal_attrs = FactoryGirl.attributes_for(:meal)
+      end
 
+      context 'missing attribute' do
         %w(description calories occurred_at).each do |attribute|
           context "missing #{attribute}" do
             before do
@@ -309,31 +383,67 @@ RSpec.describe Api::V1::MealsController do
           end
         end
       end
+
+      it 'return a 404 response when the user requested by an admin user is not found' do
+        @user.update_attribute(:role, User::ADMIN_ROLE)
+        @new_meal_attrs[:user_id] = 987
+
+        post '/api/v1/meals', @new_meal_attrs
+
+        expect(last_response.status).to eq(404)
+        json_body = JSON.parse(last_response.body)
+        expect(json_body['code']).to eq('not_found')
+        expect(json_body['error']).to match(/user.*not found/i)
+      end
     end
   end
 
   context 'GET /api/v1/meals/:id' do
     context 'success requsets' do
-      before do
-        @meal = FactoryGirl.create(:meal, user: @user)
+      context 'non-admin users' do
+        before do
+          @meal = FactoryGirl.create(:meal, user: @user)
 
-        get "/api/v1/meals/#{@meal.id}"
+          get "/api/v1/meals/#{@meal.id}"
+        end
+
+        it 'returns a 200 response status' do
+          expect(last_response.status).to eq(200)
+        end
+
+        it 'returns the Meal record details' do
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['data']).not_to be_empty
+          expect(json_body['data']['id']).to eq(@meal.id)
+          expect(json_body['data']['description']).to eq(@meal.description)
+          expect(json_body['data']['calories']).to eq(@meal.calories)
+          expect(normalize_date_time(json_body['data']['occurred_at'])).to eq(normalize_date_time(@meal.occurred_at))
+
+          expect(json_body['data']['user']).not_to be_empty
+          expect(json_body['data']['user']['id']).to eq(@meal.user.id)
+        end
       end
 
-      it 'returns a 200 response status' do
-        expect(last_response.status).to eq(200)
-      end
+      context 'admin users' do
+        before do
+          @user.update_attribute(:role, User::ADMIN_ROLE)
+          @other_user = FactoryGirl.create(:user)
+          @other_user_meal = FactoryGirl.create(:meal, user: @other_user)
 
-      it 'returns the Meal record details' do
-        json_body = JSON.parse(last_response.body)
-        expect(json_body['data']).not_to be_empty
-        expect(json_body['data']['id']).to eq(@meal.id)
-        expect(json_body['data']['description']).to eq(@meal.description)
-        expect(json_body['data']['calories']).to eq(@meal.calories)
-        expect(normalize_date_time(json_body['data']['occurred_at'])).to eq(normalize_date_time(@meal.occurred_at))
+          get "/api/v1/meals/#{@other_user_meal.id}"
+        end
 
-        expect(json_body['data']['user']).not_to be_empty
-        expect(json_body['data']['user']['id']).to eq(@meal.user.id)
+        it 'returns a 200 response status' do
+          expect(last_response.status).to eq(200)
+        end
+
+        it 'returns the other user\'s Meal record details' do
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['data']).not_to be_empty
+          expect(json_body['data']['id']).to eq(@other_user_meal.id)
+          expect(json_body['data']['user']).not_to be_empty
+          expect(json_body['data']['user']['id']).to eq(@other_user.id)
+        end
       end
     end
 
@@ -354,21 +464,21 @@ RSpec.describe Api::V1::MealsController do
         end
       end
 
-      context 'not assigned to the current user' do
+      context 'not assigned to the current basic user' do
         before do
-          @meal = FactoryGirl.create(:meal)
+          meal = FactoryGirl.create(:meal)
 
-          get "/api/v1/meals/#{@meal.id}"
+          get "/api/v1/meals/#{meal.id}"
         end
 
-        it 'returns a 401 response status' do
-          expect(last_response.status).to eq(401)
+        it 'returns a 404 response status' do
+          expect(last_response.status).to eq(404)
         end
 
         it 'returns an error code and message' do
           json_body = JSON.parse(last_response.body)
-          expect(json_body['code']).to eq('unauthorized')
-          expect(json_body['error']).to match(/not authorized/i)
+          expect(json_body['code']).to eq('not_found')
+          expect(json_body['error']).to match(/no meal found/i)
         end
       end
     end
@@ -376,35 +486,93 @@ RSpec.describe Api::V1::MealsController do
 
   context 'PUT /api/v1/meals/:id' do
     context 'success requsets' do
-      before do
-        @meal = FactoryGirl.create(:meal)
-        @meal_attr_updates = FactoryGirl.attributes_for(:meal)
+      context 'non-admin users' do
+        before do
+          @meal = FactoryGirl.create(:meal, user: @user)
+          @meal_attr_updates = FactoryGirl.attributes_for(:meal)
 
-        put "/api/v1/meals/#{@meal.id}", @meal_attr_updates
+          put "/api/v1/meals/#{@meal.id}", @meal_attr_updates
+        end
+
+        it 'returns a 200 response' do
+          expect(last_response.status).to eq(200)
+        end
+
+        it 'returns the Meal record details' do
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['data']).not_to be_empty
+          expect(json_body['data']['id']).to eq(@meal.id)
+          expect(json_body['data']['description']).to eq(@meal_attr_updates[:description])
+          expect(json_body['data']['calories']).to eq(@meal_attr_updates[:calories])
+          expect(normalize_date_time(json_body['data']['occurred_at'])).to eq(normalize_date_time(@meal_attr_updates[:occurred_at]))
+
+          expect(json_body['data']['user']).not_to be_empty
+          expect(json_body['data']['user']['id']).to eq(@meal.user.id)
+        end
       end
 
-      it 'returns a 200 response' do
-        expect(last_response.status).to eq(200)
-      end
+      context 'admin users' do
+        before do
+          @user.update_attribute(:role, User::ADMIN_ROLE)
+          @other_user = FactoryGirl.create(:user)
+          @other_user_meal = FactoryGirl.create(:meal, user: @other_user)
+          @meal_attr_updates = FactoryGirl.attributes_for(:meal)
+        end
 
-      it 'returns the Meal record details' do
-        json_body = JSON.parse(last_response.body)
-        expect(json_body['data']).not_to be_empty
-        expect(json_body['data']['id']).to eq(@meal.id)
-        expect(json_body['data']['description']).to eq(@meal_attr_updates[:description])
-        expect(json_body['data']['calories']).to eq(@meal_attr_updates[:calories])
-        expect(normalize_date_time(json_body['data']['occurred_at'])).to eq(normalize_date_time(@meal_attr_updates[:occurred_at]))
+        context 'updating other user\'s meals' do
+          before do
+            put "/api/v1/meals/#{@other_user_meal.id}", @meal_attr_updates
+          end
 
-        expect(json_body['data']['user']).not_to be_empty
-        expect(json_body['data']['user']['id']).to eq(@meal.user.id)
+          it 'returns a 200 response' do
+            expect(last_response.status).to eq(200)
+          end
+
+          it 'returns the Meal record details' do
+            json_body = JSON.parse(last_response.body)
+            expect(json_body['data']).not_to be_empty
+            expect(json_body['data']['id']).to eq(@other_user_meal.id)
+            expect(json_body['data']['description']).to eq(@meal_attr_updates[:description])
+            expect(json_body['data']['calories']).to eq(@meal_attr_updates[:calories])
+            expect(normalize_date_time(json_body['data']['occurred_at'])).to eq(normalize_date_time(@meal_attr_updates[:occurred_at]))
+
+            expect(json_body['data']['user']).not_to be_empty
+            expect(json_body['data']['user']['id']).to eq(@other_user.id)
+          end
+        end
+
+        context 'updating the user assigned to other user\`s meals' do
+          before do
+            @other_user_2 = FactoryGirl.create(:user)
+
+            put "/api/v1/meals/#{@other_user_meal.id}", user_id: @other_user_2.id
+          end
+
+          it 'changes the User record assigned to the meaal' do
+            @other_user_meal.reload
+            expect(@other_user_meal.user).to eq(@other_user_2)
+          end
+
+          it 'returns a 200 response' do
+            expect(last_response.status).to eq(200)
+          end
+
+          it 'returns the Meal record details' do
+            json_body = JSON.parse(last_response.body)
+            expect(json_body['data']).not_to be_empty
+            expect(json_body['data']['id']).to eq(@other_user_meal.id)
+            expect(json_body['data']['user']).not_to be_empty
+            expect(json_body['data']['user']['id']).to eq(@other_user_2.id)
+          end
+        end
       end
     end
 
     context 'failure requests' do
       context 'not found' do
         before do
-          @meal_attr_updates = FactoryGirl.attributes_for(:meal)
-          put '/api/v1/meals/987', @meal_attr_updates
+          meal_attr_updates = FactoryGirl.attributes_for(:meal)
+          put '/api/v1/meals/987', meal_attr_updates
         end
 
         it 'returns a 404 response status' do
@@ -418,9 +586,28 @@ RSpec.describe Api::V1::MealsController do
         end
       end
 
-      context 'missing attribute' do
+      context 'not assigned to the current basic user' do
         before do
-          @meal = FactoryGirl.create(:meal)
+          meal = FactoryGirl.create(:meal)
+          meal_attr_updates = FactoryGirl.attributes_for(:meal)
+
+          get "/api/v1/meals/#{meal.id}", meal_attr_updates
+        end
+
+        it 'returns a 404 response status' do
+          expect(last_response.status).to eq(404)
+        end
+
+        it 'returns an error code and message' do
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['code']).to eq('not_found')
+          expect(json_body['error']).to match(/no meal found/i)
+        end
+      end
+
+      context 'blank attribute' do
+        before do
+          @meal = FactoryGirl.create(:meal, user: @user)
           @meal_attr_updates = FactoryGirl.attributes_for(:meal)
         end
 
@@ -455,7 +642,7 @@ RSpec.describe Api::V1::MealsController do
 
       context 'description too long' do
         it 'leaves the record unchanged' do
-          @meal = FactoryGirl.create(:meal)
+          @meal = FactoryGirl.create(:meal, user: @user)
           orig_description = @meal.description
 
           put "/api/v1/meals/#{@meal.id}", description: Faker::Lorem.characters(2001)
@@ -468,7 +655,7 @@ RSpec.describe Api::V1::MealsController do
 
       context 'invalid occurred at date' do
         it 'leaves the record unchanged' do
-          @meal = FactoryGirl.create(:meal)
+          @meal = FactoryGirl.create(:meal, user: @user)
           orig_occurred_at = @meal.occurred_at
 
           put "/api/v1/meals/#{@meal.id}", occurred_at: 'invalid_date'
@@ -481,7 +668,7 @@ RSpec.describe Api::V1::MealsController do
 
       context 'calories too small' do
         it 'leaves the record unchanged' do
-          @meal = FactoryGirl.create(:meal)
+          @meal = FactoryGirl.create(:meal, user: @user)
           orig_calories = @meal.calories
 
           put "/api/v1/meals/#{@meal.id}", calories: 0
@@ -494,7 +681,7 @@ RSpec.describe Api::V1::MealsController do
 
       context 'calories too large' do
         it 'leaves the record unchanged' do
-          @meal = FactoryGirl.create(:meal)
+          @meal = FactoryGirl.create(:meal, user: @user)
           orig_calories = @meal.calories
 
           put "/api/v1/meals/#{@meal.id}", calories: 10000
@@ -504,26 +691,66 @@ RSpec.describe Api::V1::MealsController do
           expect(@meal.calories).to eq(orig_calories)
         end
       end
+
+      context 'user requested by an admin user is not found' do
+        it 'return a 404 response' do
+          @user.update_attribute(:role, User::ADMIN_ROLE)
+          @other_user = FactoryGirl.create(:user)
+          @other_user_meal = FactoryGirl.create(:meal, user: @other_user)
+
+          put "/api/v1/meals/#{@other_user_meal.id}", user_id: 987
+
+          expect(last_response.status).to eq(404)
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['code']).to eq('not_found')
+          expect(json_body['error']).to match(/user.*not found/i)
+        end
+      end
     end
   end
 
   context 'DELETE /api/v1/meals/:id' do
     context 'success requsets' do
-      before do
-        @meal = FactoryGirl.create(:meal)
-      end
+      context 'non-admin users' do
+        before do
+          @meal = FactoryGirl.create(:meal, user: @user)
+        end
 
-      it 'removes a Meal record' do
-        expect {
+        it 'removes a Meal record' do
+          expect {
+            delete "/api/v1/meals/#{@meal.id}"
+          }.to change{ Meal.count }.by(-1)
+
+          expect(Meal.find_by(id: @meal.id)).to be_nil
+        end
+
+        it 'returns a 204 response' do
           delete "/api/v1/meals/#{@meal.id}"
-        }.to change{ Meal.count }.by(-1)
 
-        expect(Meal.find_by(id: @meal.id)).to be_nil
+          expect(last_response.status).to eq(204)
+        end
       end
-      it 'returns a 204 response' do
-        delete "/api/v1/meals/#{@meal.id}"
 
-        expect(last_response.status).to eq(204)
+      context 'admin users' do
+        before do
+          @user.update_attribute(:role, User::ADMIN_ROLE)
+          other_user = FactoryGirl.create(:user)
+          @other_user_meal = FactoryGirl.create(:meal, user: other_user)
+        end
+
+        it 'removes a Meal record' do
+          expect {
+            delete "/api/v1/meals/#{@other_user_meal.id}"
+          }.to change{ Meal.count }.by(-1)
+
+          expect(Meal.find_by(id: @other_user_meal.id)).to be_nil
+        end
+
+        it 'returns a 204 response' do
+          delete "/api/v1/meals/#{@other_user_meal.id}"
+
+          expect(last_response.status).to eq(204)
+        end
       end
     end
 
@@ -531,6 +758,24 @@ RSpec.describe Api::V1::MealsController do
       context 'not found' do
         before do
           delete '/api/v1/meals/987'
+        end
+
+        it 'returns a 404 response status' do
+          expect(last_response.status).to eq(404)
+        end
+
+        it 'returns an error code and message' do
+          json_body = JSON.parse(last_response.body)
+          expect(json_body['code']).to eq('not_found')
+          expect(json_body['error']).to match(/no meal found/i)
+        end
+      end
+
+      context 'not assigned to the current basic user' do
+        before do
+          meal = FactoryGirl.create(:meal)
+
+          delete "/api/v1/meals/#{meal.id}"
         end
 
         it 'returns a 404 response status' do

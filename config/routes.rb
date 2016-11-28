@@ -62,7 +62,7 @@ Rails.application.routes.draw do
                                     sessions: 'api/v1/sessions',
                                     token_validations: 'api/v1/token_validations'
                                   }
-      resources :users, only: [:create, :show]
+      resources :users, only: [:index, :create, :show, :update, :destroy]
 
       resources :meals, only: [:index, :create, :show, :update, :destroy]
     end
