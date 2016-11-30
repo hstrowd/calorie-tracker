@@ -11,27 +11,35 @@ class Header extends React.Component{
 
   renderNavForActiveUser() {
     return (
-      <ul className="nav navbar-nav">
-        <li>
-            <Link to='/dashboard'>Dashboard</Link>
-        </li>
-        <li>
-            <Link to='/logout'>Logout</Link>
-        </li>
-      </ul>
+      <span>
+        <ul className="nav site-nav navbar-nav">
+          <li>
+              <Link to='/dashboard'>Dashboard</Link>
+          </li>
+        </ul>
+        <ul className="nav user-nav navbar-nav pull-right">
+          <li>
+              <Link to='/logout'>Logout</Link>
+          </li>
+        </ul>
+      </span>
     );
   }
 
   renderNavForNoUser() {
     return (
-      <ul className="nav navbar-nav">
-        <li>
-            <Link to='/login'>Login</Link>
-        </li>
-        <li>
-            <Link to='/sign_up'>Sign Up</Link>
-        </li>
-      </ul>
+      <span>
+        <ul className="nav site-nav navbar-nav">
+        </ul>
+        <ul className="nav user-nav navbar-nav pull-right">
+          <li>
+              <Link to='/login'>Login</Link>
+          </li>
+          <li>
+              <Link to='/sign_up'>Sign Up</Link>
+          </li>
+        </ul>
+      </span>
     );
   }
 
@@ -46,7 +54,7 @@ class Header extends React.Component{
                   <span className="icon-bar"></span>
                   <span className="icon-bar"></span>
               </button>
-              <Link to='/' className="navbar-brand">Calorie Tracker</Link>
+              <Link to='/' className="navbar-brand"><strong>Calorie Tracker</strong></Link>
           </div>
           <div className="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
               { this.renderNav() }
