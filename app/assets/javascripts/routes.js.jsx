@@ -6,6 +6,7 @@ var AppRoutes = (
     <DefaultRoute handler={Welcome} />
     <Route handler={Login} path='login' />
     <Route handler={Logout} path='logout' />
+    <Route handler={CreateUser} path='sign_up' />
 
     <Route handler={Dashboard} path='dashboard' />
 

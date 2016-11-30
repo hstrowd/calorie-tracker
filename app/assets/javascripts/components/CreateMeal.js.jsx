@@ -7,8 +7,8 @@ class CreateMeal extends React.Component {
     var currentDate = new Date();
     this.state = {
       userID: this.props.userID,
-      description: (this.props.description || ''),
-      calories: (this.props.calories || 0),
+      description: this.props.description,
+      calories: this.props.calories,
       date: (this.props.date || moment().format(DATE_FORMAT)),
       time: (this.props.time || moment().format(TIME_FORMAT))
     };
@@ -77,7 +77,7 @@ class CreateMeal extends React.Component {
     return (
       <div>
         <div className="intro">
-          Record a new meal using the form below.
+          Record a new meal using the form below:
         </div>
         <form onSubmit={this.handleSubmit.bind(this)}>
           <div className="form-group">

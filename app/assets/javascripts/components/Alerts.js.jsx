@@ -1,7 +1,7 @@
 class Alerts extends React.Component {
-  static add(type, body) {
+  static add(type, body, timeout = 5) {
     var alerts = JSON.parse(localStorage.getItem('alerts') || '[]');
-    alerts.push({ type: type, body: body });
+    alerts.push({ type: type, body: body, timeout: timeout });
     localStorage.setItem('alerts', JSON.stringify(alerts));
 
     return this; // Allow chaining.
@@ -30,10 +30,17 @@ class Alerts extends React.Component {
 
     var alertMsgs = [];
     alerts.forEach((alert) => {
+      var idString = 'status-' + Math.ceil(Math.random() * 10000);
       var classString = 'alert alert-' + alert.type;
-      alertMsgs.push(<div id="status" className={classString} ref="status">
+      alertMsgs.push(<div id={idString} className={classString} ref="status">
                        {alert.body}
                      </div>);
+
+      if (alert.timeout) {
+        window.setTimeout(function(){
+          $('#' + idString).slideUp();
+        }, alert.timeout * 1000)
+      }
     });
 
     return (

@@ -28,6 +28,9 @@ class Header extends React.Component{
         <li>
             <Link to='/login'>Login</Link>
         </li>
+        <li>
+            <Link to='/sign_up'>Sign Up</Link>
+        </li>
       </ul>
     );
   }
