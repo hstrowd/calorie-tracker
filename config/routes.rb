@@ -67,4 +67,7 @@ Rails.application.routes.draw do
       resources :meals, only: [:index, :create, :show, :update, :destroy]
     end
   end
+
+  root 'application#index'
+   get '/*path' => 'application#index'
 end

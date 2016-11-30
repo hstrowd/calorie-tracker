@@ -13,4 +13,24 @@
 //= require jquery
 //= require jquery_ujs
 //= require turbolinks
+
+//= require react
+//= require react_ujs
+//= require react_router
+//= require react_router_ujs
+
+// Bower packages
+//= require jquery-cookie
+//= require jquery-deparam
+//= require pubsub-js
+//= require j-toker
+
+//= require_tree ./components
 //= require_tree .
+
+
+$( document ).ready(function() {
+  ReactRouter.run(AppRoutes, function (Handler) {
+    ReactDOM.render(<Handler/>, document.getElementById('react-root'));
+  });
+});
