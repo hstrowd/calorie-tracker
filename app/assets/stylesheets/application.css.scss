@@ -27,13 +27,29 @@ $spacer-y: $spacer;
 }
 
 
-.meal-date {
+.meals .meal-date {
     border-radius: $spacer * 2;
     margin: $spacer * 2;
     padding: $spacer;
 }
-.meal-preview {
+.meals .daily-limit-under {
     background-color: #c6e5ff;
+}
+.meals .daily-limit-in-progress {
+    background-color: #c6e5ff;
+}
+.meals .daily-limit-over {
+    background-color: #c6e5ff;
+}
+.meals .meal-date .date-title {
+    margin: 0 ($spacer * 3);
+}
+.meals .meal-date .badge {
+    margin: ($spacer * 1.5) 0;
+}
+
+.meal-preview {
+    background-color: #f9f9f9;
     border-radius: $spacer;
     margin: $spacer;
     padding: $spacer;
@@ -41,3 +57,4 @@ $spacer-y: $spacer;
 .meal-preview .description {
     margin: 0 $spacer;
 }
+

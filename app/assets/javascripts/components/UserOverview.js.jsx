@@ -22,6 +22,7 @@ class UserOverview extends React.Component {
   }
 
   render() {
+    var dailyCalorieTarget = this.state.user && this.state.user.daily_calorie_target;
     return (
       <div>
         <div className="intro">
@@ -33,7 +34,7 @@ class UserOverview extends React.Component {
           </div>
           <div className="clearfix"></div>
         </div>
-        <MealList meals={this.state.meals} />
+        <MealList dailyCalorieTarget={dailyCalorieTarget} />
       </div>
     );
   }

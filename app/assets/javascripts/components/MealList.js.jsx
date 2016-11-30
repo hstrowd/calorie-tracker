@@ -18,6 +18,7 @@ class MealList extends React.Component {
   }
 
   render() {
+    var self = this;
     var mealList = [];
     if ( this.state.meals.length > 0 ) {
       var dates = {};
@@ -30,15 +31,34 @@ class MealList extends React.Component {
         dates[meal.date].push(meal);
       });
 
-      $.each(dates, function(date, meals) {
+      $.each(dates, function(dateStr, meals) {
         var dateMeals = [];
+        var calorieTotal = 0;
+        var date = moment(meals[0].occurred_at);
         meals.forEach(function(meal) {
-          dateMeals.push(<MealPreview meal={meal} />);
+          dateMeals.push(<MealPreview key={meal.id} meal={meal} />);
+          calorieTotal += meal.calories;
         });
 
+        var dailyLimitClass = '';
+        if (calorieTotal > self.props.dailyCalorieTarget) {
+          dailyLimitClass = 'bg-danger'
+        } else {
+          if ( moment().startOf('day') < date ) {
+            dailyLimitClass = 'bg-info'
+          } else {
+            dailyLimitClass = 'bg-success'
+          }
+        }
+
+        var listDateClasses = 'meal-date ' + dailyLimitClass;
         mealList.push(
-          <div className="meal-date">
-            <h3>{date}</h3>
+          <div className={listDateClasses}>
+            <div className="date-title">
+              <div className="pull-left"><h3>{dateStr}</h3></div>
+              <div className="badge pull-right">{calorieTotal} Calories</div>
+              <div className="clearfix"></div>
+            </div>
             {dateMeals}
             <div className="clearfix"></div>
           </div>

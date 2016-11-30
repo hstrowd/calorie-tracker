@@ -1,7 +1,7 @@
 class MealPreview extends React.Component {
   render() {
     return (
-      <div className="meal-preview col-md-4">
+      <div className="meal-preview col-md-5">
         <div className="description"><h4>{this.props.meal.description}</h4></div>
         <div className="attrs">
           <div className="time col-md-5">
