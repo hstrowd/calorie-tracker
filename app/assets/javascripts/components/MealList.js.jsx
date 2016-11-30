@@ -59,7 +59,9 @@ class MealList extends React.Component {
               <div className="badge pull-right">{calorieTotal} Calories</div>
               <div className="clearfix"></div>
             </div>
-            {dateMeals}
+            <div>
+              {dateMeals}
+            </div>
             <div className="clearfix"></div>
           </div>
         );

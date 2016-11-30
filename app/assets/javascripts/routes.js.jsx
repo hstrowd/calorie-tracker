@@ -11,5 +11,6 @@ var AppRoutes = (
     <Route handler={Dashboard} path='dashboard' />
 
     <Route handler={CreateMeal} path='user/:userID/meals/new' />
+    <Route handler={EditMeal} path='user/:userID/meals/:mealID/edit' />
   </Route>
 );
