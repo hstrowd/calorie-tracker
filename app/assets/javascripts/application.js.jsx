@@ -24,6 +24,7 @@
 //= require jquery-deparam
 //= require pubsub-js
 //= require j-toker
+//= require moment
 
 //= require_tree ./components
 //= require_tree .

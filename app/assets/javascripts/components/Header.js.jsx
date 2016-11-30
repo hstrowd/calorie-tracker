@@ -13,6 +13,9 @@ class Header extends React.Component{
     return (
       <ul className="nav navbar-nav">
         <li>
+            <Link to='/dashboard'>Dashboard</Link>
+        </li>
+        <li>
             <Link to='/logout'>Logout</Link>
         </li>
       </ul>

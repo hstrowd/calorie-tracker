@@ -14,9 +14,37 @@
  *= require_self
  */
 
-@import "bootstrap";
+$spacer: 1rem;
+$spacer-x: $spacer;
+$spacer-y: $spacer;
 
+$brand-primary:   #c6e5ff;
+
+$brand-success: #5cb85c;
+$brand-info:    #5bc0de;
+$brand-warning: #f0ad4e;
+$brand-danger:  #d9534f;
+
+@import "bootstrap-sprockets";
+@import "bootstrap";
+@import "bootstrap/theme";
 
 .header-spacer {
     margin-top: 60px;
+}
+
+
+.meal-date {
+    border-radius: $spacer * 2;
+    margin: $spacer * 2;
+    padding: $spacer;
+}
+.meal-preview {
+    background-color: $brand-primary;
+    border-radius: $spacer;
+    margin: $spacer;
+    padding: $spacer;
+}
+.meal-preview .description {
+    margin: 0 $spacer;
 }

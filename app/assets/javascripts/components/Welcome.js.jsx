@@ -1,5 +1,5 @@
-class Welcome extends React.Component({
-  render: function() {
+class Welcome extends React.Component {
+  render() {
     return (
       <div>
         <h2>Welcome to the World's Best Calorie Tracker</h2>
@@ -12,4 +12,4 @@ class Welcome extends React.Component({
       </div>
     );
   }
-});
+};

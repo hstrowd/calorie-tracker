@@ -1,5 +1,5 @@
 class Alerts extends React.Component {
-  static addAlert(type, body) {
+  static add(type, body) {
     var alerts = JSON.parse(localStorage.getItem('alerts') || '[]');
     alerts.push({ type: type, body: body });
     localStorage.setItem('alerts', JSON.stringify(alerts));
@@ -7,7 +7,7 @@ class Alerts extends React.Component {
     return this; // Allow chaining.
   }
 
-  static reload() {
+  static update() {
     window.reloadAlerts();
 
     return this; // Allow chaining.

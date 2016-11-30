@@ -7,6 +7,8 @@ var AppRoutes = (
     <Route handler={Login} path='login' />
     <Route handler={Logout} path='logout' />
 
-    <Route handler={UserShow} path='user/:user_id' />
+    <Route handler={Dashboard} path='dashboard' />
+
+    <Route handler={CreateMeal} path='user/:userID/meals/new' />
   </Route>
 );

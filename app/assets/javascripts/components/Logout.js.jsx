@@ -1,13 +1,13 @@
 class Logout extends React.Component {
   render() {
-    Alerts.addAlert('info', 'Logging out...').reload();
+    Alerts.add('info', 'Logging out...');
 
     $.auth.signOut()
       .then(function(resp){
-        Alerts.addAlert('success', 'Logged out.').reload();
+        Alerts.add('success', 'Logged out.').update();
       })
       .fail(function(resp) {
-        Alerts.addAlert('danger', 'Logout Failed.').reload();
+        Alerts.add('danger', 'Logout Failed.').update();
       });
 
     window.location.assign('/#/');

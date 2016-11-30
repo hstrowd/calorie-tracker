@@ -17,25 +17,32 @@ class Login extends React.Component {
 
   handleSubmit(event) {
     event.preventDefault();
-    Alerts.addAlert('info', 'Logging in....').reload();
+    Alerts.add('info', 'Logging in....').update();
     this.sendFormData();
   }
 
   sendFormData() {
-    var formData = {
+    var credentials = {
       email: this.state.email,
       password: this.state.password
     };
 
     var self = this;
-    $.auth.emailSignIn(formData)
+    $.auth.emailSignIn(credentials)
       .then(function(resp) {
-        Alerts.addAlert('success', 'Logged in.');
-        window.location.assign('/#/user/' + $.auth.user.id);
+        self.handleSuccess();
       })
       .fail(function(resp) {
-        Alerts.addAlert('danger', 'Login Failed.').reload();
+        self.handleFailure();
       });
+  }
+
+  handleSuccess() {
+    Alerts.add('success', 'Logged in.');
+    window.location.assign('/#/dashboard');
+  }
+  handleFailure() {
+    Alerts.add('danger', 'Login Failed.').update();
   }
 
   render() {
@@ -60,9 +67,5 @@ class Login extends React.Component {
         </form>
       </div>
     );
-  }
-
-  contextTypes: {
-    router: React.PropTypes.func.isRequired
   }
 };

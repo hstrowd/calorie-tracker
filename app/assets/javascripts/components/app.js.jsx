@@ -5,7 +5,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = { authLoaded: false };
+    this.state = { userLoaded: false };
   }
 
   componentWillMount() {
@@ -40,21 +40,32 @@ class App extends React.Component {
 
     })
     .then(function() {
-      self.forceUpdate();
+      self.setState({ userLoaded: true });
     })
     .fail(function() {
-      self.forceUpdate();
+      self.setState({ userLoaded: true });
     });
   }
 
   render() {
+    var page = '';
+
+    // Until we know who/if a current user is logged in, it's not safe to load the page content.
+    if ( this.state.userLoaded ) {
+      page = (
+        <div>
+          <Header />
+          <div className="container header-spacer">
+            <Alerts />
+            <RouteHandler {...this.props} />
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div>
-        <Header />
-        <div className="container header-spacer">
-          <Alerts />
-          <RouteHandler {...this.props} />
-        </div>
+        {page}
       </div>
     );
   }
