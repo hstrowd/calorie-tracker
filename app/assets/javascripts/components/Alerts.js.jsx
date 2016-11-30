@@ -30,9 +30,10 @@ class Alerts extends React.Component {
 
     var alertMsgs = [];
     alerts.forEach((alert) => {
+      var key = Math.ceil(Math.random() * 10000);
       var idString = 'status-' + Math.ceil(Math.random() * 10000);
       var classString = 'alert alert-' + alert.type;
-      alertMsgs.push(<div id={idString} className={classString} ref="status">
+      alertMsgs.push(<div key={key} id={idString} className={classString} ref="status">
                        {alert.body}
                      </div>);
 

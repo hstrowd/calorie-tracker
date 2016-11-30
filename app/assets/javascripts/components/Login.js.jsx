@@ -51,18 +51,28 @@ class Login extends React.Component {
         <form onSubmit={this.handleSubmit.bind(this)}>
           <div className="form-group">
             <label for="email">Email</label>
-            <input type="text" name="email"
-                   className="form-control" placeholder="john.doe@gmail.com"
-                   value={this.state.email} onChange={this.updateEmail.bind(this)} />
+            <input type="text"
+                   name="email"
+                   className="form-control"
+                   placeholder="john.doe@gmail.com"
+                   required={true}
+                   value={this.state.email}
+                   onChange={this.updateEmail.bind(this)} />
           </div>
           <div className="form-group">
             <label for="password">Password</label>
-            <input type="password" name="password"
-                   className="form-control" placeholder="Pa$$w0rd"
-                   value={this.state.password} onChange={this.updatePassword.bind(this)} />
+            <input type="password"
+                   name="password"
+                   className="form-control"
+                   placeholder="Pa$$w0rd"
+                   required={true}
+                   value={this.state.password}
+                   onChange={this.updatePassword.bind(this)} />
           </div>
           <div className="actions">
-            <input type="submit" className="btn btn-success" value="Login" />
+            <input type="submit"
+                   className="btn btn-success"
+                   value="Login" />
           </div>
         </form>
       </div>

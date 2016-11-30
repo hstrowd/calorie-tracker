@@ -82,31 +82,49 @@ class CreateMeal extends React.Component {
         <form onSubmit={this.handleSubmit.bind(this)}>
           <div className="form-group">
             <label for="description">Description</label>
-            <input type="text" name="description"
-                   className="form-control" placeholder="Describe this meal"
-                   value={this.state.description} onChange={this.updateDescription.bind(this)} />
+            <input type="text"
+                   name="description"
+                   className="form-control"
+                   placeholder="Describe this meal"
+                   required={true}
+                   value={this.state.description}
+                   onChange={this.updateDescription.bind(this)} />
           </div>
           <div className="form-group">
             <label for="calories">Calories</label>
-            <input type="number" name="calories"
-                   className="form-control" placeholder="500"
-                   step="1" min="0" max="2999"
-                   value={this.state.calories} onChange={this.updateCalories.bind(this)} />
+            <input type="number"
+                   name="calories"
+                   className="form-control"
+                   placeholder="500"
+                   required={true}
+                   step="1"
+                   min="0"
+                   max="2999"
+                   value={this.state.calories}
+                   onChange={this.updateCalories.bind(this)} />
           </div>
           <div className="form-group">
             <label for="date">Date</label>
-            <input type="date" name="date"
+            <input type="date"
+                   name="date"
                    className="form-control"
-                   value={this.state.date} onChange={this.updateDate.bind(this)} />
+                   required={true}
+                   value={this.state.date}
+                   onChange={this.updateDate.bind(this)} />
           </div>
           <div className="form-group">
             <label for="time">Time</label>
-            <input type="time" name="time"
+            <input type="time"
+                   name="time"
                    className="form-control"
-                   value={this.state.time} onChange={this.updateTime.bind(this)} />
+                   required={true}
+                   value={this.state.time}
+                   onChange={this.updateTime.bind(this)} />
           </div>
           <div className="actions">
-            <input type="submit" className="btn btn-success" value="Create" />
+            <input type="submit"
+                   className="btn btn-success"
+                   value="Create" />
           </div>
         </form>
       </div>
