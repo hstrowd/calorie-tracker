@@ -2,7 +2,10 @@ class UserOverview extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = { user: null };
+    this.state = {
+      user: null,
+      mealFilters: {}
+    };
   }
 
   componentWillMount() {
@@ -21,6 +24,10 @@ class UserOverview extends React.Component {
     window.location.assign('/#/user/' + this.props.userID + '/meals/new');
   }
 
+  handleFilterFormSubmit(filterAttrs) {
+    this.setState({ mealFilters: filterAttrs });
+  }
+
   render() {
     var dailyCalorieTarget = this.state.user && this.state.user.daily_calorie_target;
     return (
@@ -34,7 +41,10 @@ class UserOverview extends React.Component {
           </div>
           <div className="clearfix"></div>
         </div>
-        <MealList dailyCalorieTarget={dailyCalorieTarget} />
+        <div>
+          <MealFilterForm handleFormSubmit={this.handleFilterFormSubmit.bind(this)} />
+        </div>
+        <MealList dailyCalorieTarget={dailyCalorieTarget} filters={this.state.mealFilters} />
       </div>
     );
   }

@@ -2,12 +2,43 @@ class MealList extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = { meals: [] };
+    this.state = {
+      filters: (this.props.filters || {}),
+      meals: []
+    };
   }
 
   componentWillMount() {
+    this.retrieveMeals(this.state.filters);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.filters != this.props.filters) {
+      this.retrieveMeals(nextProps.filters);
+    }
+  }
+
+  retrieveMeals(filters) {
     var self = this;
-    var mealSearchPath = '/api/v1/meals';
+
+    var queryParams = [];
+    if (filters.startDate) {
+      queryParams.push('start_date=' + filters.startDate);
+    }
+    if (filters.endDate) {
+      queryParams.push('end_date=' + filters.endDate);
+    }
+    // Account for the timezone offset.
+    if (filters.startHour || filters.endHour) {
+      var utcHourOffset = Math.round(moment().utcOffset() / 60);
+      var startHour = (parseInt(filters.startHour) || 0 ) + utcHourOffset;
+      var endHour   = (parseInt(filters.endHour)   || 23) + utcHourOffset;
+      queryParams.push('start_hour=' + startHour);
+      queryParams.push('end_hour=' + endHour);
+    }
+    queryString = queryParams.join('&')
+
+    var mealSearchPath = '/api/v1/meals?' + queryString;
     $.getJSON(mealSearchPath)
       .then(function( resp ) {
         self.setState({ meals: resp.data })
@@ -31,40 +62,8 @@ class MealList extends React.Component {
         dates[meal.date].push(meal);
       });
 
-      $.each(dates, function(dateStr, meals) {
-        var dateMeals = [];
-        var calorieTotal = 0;
-        var date = moment(meals[0].occurred_at);
-        meals.forEach(function(meal) {
-          dateMeals.push(<MealPreview key={meal.id} meal={meal} />);
-          calorieTotal += meal.calories;
-        });
-
-        var dailyLimitClass = '';
-        if (calorieTotal > self.props.dailyCalorieTarget) {
-          dailyLimitClass = 'bg-danger'
-        } else {
-          if ( moment().startOf('day') < date ) {
-            dailyLimitClass = 'bg-info'
-          } else {
-            dailyLimitClass = 'bg-success'
-          }
-        }
-
-        var listDateClasses = 'meal-date ' + dailyLimitClass;
-        mealList.push(
-          <div className={listDateClasses}>
-            <div className="date-title">
-              <div className="pull-left"><h3>{dateStr}</h3></div>
-              <div className="badge pull-right">{calorieTotal} Calories</div>
-              <div className="clearfix"></div>
-            </div>
-            <div>
-              {dateMeals}
-            </div>
-            <div className="clearfix"></div>
-          </div>
-        );
+      $.each(dates, function(dateString, meals) {
+        mealList.push(self.renderDateContainer(dateString, meals));
       });
     } else {
       meals = (
@@ -81,5 +80,41 @@ class MealList extends React.Component {
     );
   }
 
+
+  renderDateContainer(dateString, meals) {
+    var dateMeals = [];
+    var calorieTotal = 0;
+    var date = moment(meals[0].occurred_at);
+    meals.forEach(function(meal) {
+      dateMeals.push(<MealPreview key={meal.id} meal={meal} />);
+      calorieTotal += meal.calories;
+    });
+
+    var dailyLimitClass = '';
+    if (calorieTotal > this.props.dailyCalorieTarget) {
+      dailyLimitClass = 'bg-danger'
+    } else {
+      if ( moment().startOf('day') < date ) {
+        dailyLimitClass = 'bg-info'
+      } else {
+        dailyLimitClass = 'bg-success'
+      }
+    }
+
+    var listDateClasses = 'meal-date ' + dailyLimitClass;
+    return (
+      <div className={listDateClasses}>
+        <div className="date-title">
+          <div className="pull-left"><h3>{dateString}</h3></div>
+          <div className="badge pull-right">{calorieTotal} Calories</div>
+          <div className="clearfix"></div>
+        </div>
+        <div>
+          {dateMeals}
+        </div>
+        <div className="clearfix"></div>
+      </div>
+    );
+  }
 };
 
