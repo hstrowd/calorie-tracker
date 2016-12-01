@@ -159,7 +159,7 @@ RSpec.describe Api::V1::MealsController do
           end
         end
 
-        context 'with start hour' do
+        context 'with only start hour' do
           it 'returns only meals that occured since the specified hour of the day, inclusively' do
             get '/api/v1/meals', start_hour: 11
 
@@ -172,7 +172,7 @@ RSpec.describe Api::V1::MealsController do
           end
         end
 
-        context 'with end hour' do
+        context 'with only end hour' do
           it 'returns only meals that occured up until the specified hour of the day, inclusively' do
             get '/api/v1/meals', end_hour: 12
 
@@ -186,13 +186,25 @@ RSpec.describe Api::V1::MealsController do
         end
 
         context 'with start and end hour' do
-          it 'returns only meals that occured between the specified hours of the day, inclusively' do
-            get '/api/v1/meals', start_hour: 10, end_hour: 14
+          context 'with a start hour less than the end hour' do
+            it 'returns only meals that occured between the specified hours of the day, inclusively' do
+              get '/api/v1/meals', start_hour: 10, end_hour: 14
 
-            json_body = JSON.parse(last_response.body)
-            expect(json_body['data'].length).to eq(2)
-            expect(json_body['data'][0]['id']).to eq(@yesterday_brunch_meal.id)
-            expect(json_body['data'][1]['id']).to eq(@three_days_ago_lunch_meal.id)
+              json_body = JSON.parse(last_response.body)
+              expect(json_body['data'].length).to eq(2)
+              expect(json_body['data'][0]['id']).to eq(@yesterday_brunch_meal.id)
+              expect(json_body['data'][1]['id']).to eq(@three_days_ago_lunch_meal.id)
+            end
+          end
+          context 'with a start hour greater than the end hour' do
+            it 'returns only meals that occured after the end hour and before the start hour, inclusively' do
+              get '/api/v1/meals', start_hour: 22, end_hour: 8
+
+              json_body = JSON.parse(last_response.body)
+              expect(json_body['data'].length).to eq(2)
+              expect(json_body['data'][0]['id']).to eq(@today_breakfast_meal.id)
+              expect(json_body['data'][1]['id']).to eq(@two_days_ago_breakfast_meal.id)
+            end
           end
         end
 

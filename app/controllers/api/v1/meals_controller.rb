@@ -43,11 +43,20 @@ module Api::V1
         meals = meals.where("DATE_TRUNC('DAY', occurred_at) <= ?", end_date)
       end
 
-      if start_hour.present?
-        meals = meals.where("DATE_PART('HOUR', occurred_at) >= ?", start_hour)
-      end
-      if end_hour.present?
-        meals = meals.where("DATE_PART('HOUR', occurred_at) <= ?", end_hour)
+      if start_hour.present? && end_hour.present?
+        if end_hour < start_hour
+          # The range spans midnight, so we need to union these conditions instead of intersecting.
+          meals = meals.where("DATE_PART('HOUR', occurred_at) >= ? OR DATE_PART('HOUR', occurred_at) <= ?", start_hour, end_hour)
+        else
+          meals = meals.where("DATE_PART('HOUR', occurred_at) >= ? AND DATE_PART('HOUR', occurred_at) <= ?", start_hour, end_hour)
+        end
+      else
+        if start_hour.present?
+          meals = meals.where("DATE_PART('HOUR', occurred_at) >= ?", start_hour)
+        end
+        if end_hour.present?
+          meals = meals.where("DATE_PART('HOUR', occurred_at) <= ?", end_hour)
+        end
       end
 
       meals = meals.order(occurred_at: :desc)
