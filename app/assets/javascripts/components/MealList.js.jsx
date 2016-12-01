@@ -31,8 +31,14 @@ class MealList extends React.Component {
     // Account for the timezone offset.
     if (filters.startHour || filters.endHour) {
       var utcHourOffset = Math.round(moment().utcOffset() / 60);
-      var startHour = (parseInt(filters.startHour) || 0 ) + utcHourOffset;
-      var endHour   = (parseInt(filters.endHour)   || 23) + utcHourOffset;
+      var startHour = (parseInt(filters.startHour) || 0 );
+      startHour -= utcHourOffset;
+      startHour %= 24;
+
+      var endHour = (parseInt(filters.endHour) || 0 );
+      endHour -= utcHourOffset;
+      endHour %= 24;
+
       queryParams.push('start_hour=' + startHour);
       queryParams.push('end_hour=' + endHour);
     }
