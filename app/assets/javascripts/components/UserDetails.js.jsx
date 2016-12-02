@@ -9,8 +9,21 @@ class UserDetails extends React.Component {
   }
 
   componentWillMount() {
+    this.retrieveUser(this.props.userID);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.userID != this.props.userID) {
+      this.retrieveUser(nextProps.userID);
+    }
+    if (nextProps.mealFilters != this.props.mealFilters) {
+      this.setState({ mealFilters: nextProps.mealFilters });
+    }
+  }
+
+  retrieveUser(userID) {
     var self = this;
-    var userLookupPath = '/api/v1/users/' + this.props.userID;
+    var userLookupPath = '/api/v1/users/' + userID;
     $.getJSON(userLookupPath)
       .then(function( resp ) {
         self.setState({ user: resp.data })
@@ -51,7 +64,8 @@ class UserDetails extends React.Component {
           <div className="clearfix"></div>
         </div>
         <div>
-          <MealFilterForm handleFormSubmit={this.handleFilterFormSubmit.bind(this)} />
+          <MealFilterForm handleFormSubmit={this.handleFilterFormSubmit.bind(this)}
+                          filters={this.state.mealFilters} />
         </div>
         <MealList user={this.state.user}
                   filters={this.state.mealFilters} />

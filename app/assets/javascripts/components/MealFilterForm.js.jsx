@@ -10,6 +10,17 @@ class MealFilterForm extends React.Component {
     };
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.filters != this.props.filters) {
+      this.setState({
+        startDate: (nextProps.filters.startDate || ''),
+        endDate:   (nextProps.filters.endDate || ''),
+        startHour: (nextProps.filters.startHour || ''),
+        endHour:   (nextProps.filters.endHour || '')
+      });
+    }
+  }
+
   formatDate(date) {
     return date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate();
   }

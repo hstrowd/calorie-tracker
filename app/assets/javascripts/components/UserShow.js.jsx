@@ -9,7 +9,7 @@ class UserShow extends React.Component {
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.params.userID != this.props.params.userID) {
-      this.setState({ state: nextProps.params.userID });
+      this.setState({ userID: (nextProps.params.userID || $.auth.user.id) });
     }
   }
 
@@ -36,7 +36,8 @@ class UserShow extends React.Component {
         <div>
           <h2>{title}</h2>
         </div>
-        <UserDetails userID={this.state.userID} />
+        <UserDetails userID={this.state.userID}
+                     mealFilters={{}} />
       </div>
     );
   }
