@@ -1,4 +1,4 @@
-class CreateUser extends React.Component {
+class UserNew extends React.Component {
   constructor(props) {
     super(props);
 

@@ -1,4 +1,4 @@
-class UserOverview extends React.Component {
+class UserDetails extends React.Component {
   constructor(props) {
     super(props);
 

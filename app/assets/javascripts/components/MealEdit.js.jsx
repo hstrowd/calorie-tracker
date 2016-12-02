@@ -1,4 +1,4 @@
-class EditMeal extends React.Component {
+class MealEdit extends React.Component {
   constructor(props) {
     super(props);
 

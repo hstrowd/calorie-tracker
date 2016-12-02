@@ -1,4 +1,4 @@
-class ShowUser extends React.Component {
+class UserShow extends React.Component {
   constructor(props) {
     super(props);
 
@@ -36,7 +36,7 @@ class ShowUser extends React.Component {
         <div>
           <h2>{title}</h2>
         </div>
-        <UserOverview userID={this.state.userID} />
+        <UserDetails userID={this.state.userID} />
       </div>
     );
   }

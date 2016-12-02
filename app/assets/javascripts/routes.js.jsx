@@ -4,17 +4,18 @@ var Route = ReactRouter.Route,
 var AppRoutes = (
   <Route handler={App}>
     <DefaultRoute handler={Welcome} />
-    <Route handler={Login} path='login' />
-    <Route handler={Logout} path='logout' />
-    <Route handler={CreateUser} path='sign_up' />
 
-    <Route handler={ShowUser} path='dashboard' />
-    <Route handler={ManageUsers} path='users' />
-    <Route handler={CreateUser} path='users/new' />
-    <Route handler={ShowUser} path='users/:userID' />
-    <Route handler={EditUser} path='users/:userID/edit' />
+    <Route handler={Login}   path='login' />
+    <Route handler={Logout}  path='logout' />
+    <Route handler={UserNew} path='sign_up' />
 
-    <Route handler={CreateMeal} path='users/:userID/meals/new' />
-    <Route handler={EditMeal} path='users/:userID/meals/:mealID/edit' />
+    <Route handler={UsersIndex} path='users' />
+    <Route handler={UserNew}    path='users/new' />
+    <Route handler={UserShow}   path='dashboard' />
+    <Route handler={UserShow}   path='users/:userID' />
+    <Route handler={UserEdit}   path='users/:userID/edit' />
+
+    <Route handler={MealNew}  path='users/:userID/meals/new' />
+    <Route handler={MealEdit} path='users/:userID/meals/:mealID/edit' />
   </Route>
 );

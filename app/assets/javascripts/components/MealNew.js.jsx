@@ -1,4 +1,4 @@
-class CreateMeal extends React.Component {
+class MealNew extends React.Component {
   constructor(props) {
     super(props);
   }

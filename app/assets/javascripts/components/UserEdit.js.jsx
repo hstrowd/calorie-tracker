@@ -1,4 +1,4 @@
-class EditUser extends React.Component {
+class UserEdit extends React.Component {
   constructor(props) {
     super(props);
 

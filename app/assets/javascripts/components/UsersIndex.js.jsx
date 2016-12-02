@@ -1,4 +1,4 @@
-class ManageUsers extends React.Component {
+class UsersIndex extends React.Component {
   constructor(props) {
     super(props);
 
