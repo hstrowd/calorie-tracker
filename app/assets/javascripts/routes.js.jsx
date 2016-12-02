@@ -8,9 +8,10 @@ var AppRoutes = (
     <Route handler={Logout} path='logout' />
     <Route handler={CreateUser} path='sign_up' />
 
-    <Route handler={Dashboard} path='dashboard' />
+    <Route handler={ShowUser} path='dashboard' />
     <Route handler={ManageUsers} path='users' />
     <Route handler={CreateUser} path='users/new' />
+    <Route handler={ShowUser} path='users/:userID' />
     <Route handler={EditUser} path='users/:userID/edit' />
 
     <Route handler={CreateMeal} path='users/:userID/meals/new' />

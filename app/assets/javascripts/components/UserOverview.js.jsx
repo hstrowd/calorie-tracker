@@ -29,7 +29,6 @@ class UserOverview extends React.Component {
   }
 
   render() {
-    var dailyCalorieTarget = this.state.user && this.state.user.daily_calorie_target;
     return (
       <div>
         <div className="intro">
@@ -47,7 +46,8 @@ class UserOverview extends React.Component {
         <div>
           <MealFilterForm handleFormSubmit={this.handleFilterFormSubmit.bind(this)} />
         </div>
-        <MealList dailyCalorieTarget={dailyCalorieTarget} filters={this.state.mealFilters} />
+        <MealList user={this.state.user}
+                  filters={this.state.mealFilters} />
       </div>
     );
   }

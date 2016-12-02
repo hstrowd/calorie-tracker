@@ -2,7 +2,6 @@ class EditMeal extends React.Component {
   constructor(props) {
     super(props);
 
-    var currentDate = new Date();
     this.state = {
       meal: null
     };
@@ -67,7 +66,7 @@ class EditMeal extends React.Component {
 
   handleUpdateSuccess() {
     Alerts.add('success', 'Successfully updated the meal.');
-    window.location.assign('/#/dashboard');
+    this.redirectBackToUser();
   }
   handleUpdateFailure() {
     Alerts.add('danger', 'Unable to update the meal.').update();
@@ -97,10 +96,18 @@ class EditMeal extends React.Component {
 
   handleDeleteSuccess() {
     Alerts.add('success', 'Successfully deleted the meal.');
-    window.location.assign('/#/dashboard');
+    this.redirectBackToUser();
   }
   handleDeleteFailure() {
     Alerts.add('danger', 'Unable to delete the meal.').update();
+  }
+
+  redirectBackToUser() {
+    var redirectPath = '/#/dashboard';
+    if ($.auth.user.id != this.props.params.userID) {
+      redirectPath = '/#/users/' + this.props.params.userID;
+    }
+    window.location.assign(redirectPath);
   }
 
   render() {

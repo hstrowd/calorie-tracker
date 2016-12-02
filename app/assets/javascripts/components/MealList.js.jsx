@@ -3,25 +3,44 @@ class MealList extends React.Component {
     super(props);
 
     this.state = {
+      user: (this.props.user || {}),
+      dailyCalorieTarget: ((this.props.user && this.props.user.daily_calorie_target) || null),
       filters: (this.props.filters || {}),
       meals: []
     };
   }
 
   componentWillMount() {
-    this.retrieveMeals(this.state.filters);
+    this.retrieveMeals(this.state.user.id, this.state.filters);
   }
 
   componentWillReceiveProps(nextProps) {
+    var newFilters = null;
     if (nextProps.filters != this.props.filters) {
-      this.retrieveMeals(nextProps.filters);
+      newFilters = nextProps.filters;
+    }
+    var newUser = null;
+    if (nextProps.user != this.props.user) {
+      newUser = nextProps.user;
+      this.setState({
+        user: nextProps.user,
+        dailyCalorieTarget: (nextProps.user.daily_calorie_target || null)
+      });
+    }
+    if(newFilters || newUser) {
+      newUser = newUser || this.state.user;
+      newFilters = newFilters || this.props.filters;
+      this.retrieveMeals(newUser.id, newFilters);
     }
   }
 
-  retrieveMeals(filters) {
+  retrieveMeals(userID, filters) {
     var self = this;
 
     var queryParams = [];
+    if (userID) {
+      queryParams.push('user_id=' + userID);
+    }
     if (filters.startDate) {
       queryParams.push('start_date=' + filters.startDate);
     }
@@ -55,6 +74,8 @@ class MealList extends React.Component {
   }
 
   render() {
+    if (!this.state.user) { return null; }
+
     var self = this;
     var mealList = [];
     if ( this.state.meals.length > 0 ) {
@@ -79,7 +100,7 @@ class MealList extends React.Component {
       mealList = (
         <div className="alert alert-info col-md-7 text-center"
              style={alertStyles}>
-          No meals recorded yet. <Link to={`/users/${this.props.userID}/meals/new`}>Click here</Link> to record your first meal.
+          No meals recorded yet. <Link to={`/users/${this.state.user.id}/meals/new`}>Click here</Link> to record your first meal.
         </div>
       );
     }
@@ -102,7 +123,7 @@ class MealList extends React.Component {
     });
 
     var dailyLimitClass = '';
-    if (calorieTotal > this.props.dailyCalorieTarget) {
+    if (calorieTotal > this.state.dailyCalorieTarget) {
       dailyLimitClass = 'bg-danger'
     } else {
       if ( moment().startOf('day') < date ) {

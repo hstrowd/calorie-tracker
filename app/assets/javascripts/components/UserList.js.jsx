@@ -13,26 +13,38 @@ class UserList extends React.Component {
     }
   }
 
-  handleEditUser(user_id) {
-    window.location.assign('/#/users/' + user_id + '/edit');
+  handleEditUser(userID) {
+    window.location.assign('/#/users/' + userID + '/edit');
   }
 
   render() {
     var self = this;
     var userList = [];
     if ( this.state.users.length > 0 ) {
+      var cellStyle = {
+        verticalAlign: 'middle'
+      };
       this.state.users.forEach(function(user) {
+        var user_name = user.name;
+        // Enable link for admin users to load meal details for users.
+        if ($.auth.user.role == ADMIN_ROLE) {
+          user_name = (<Link to={'/users/' + user.id}>{user.name}</Link>);
+        }
         userList.push(
           <tr key={"user-" + user.id}
               className="user-row">
-            <td className="name">{user.name}</td>
-            <td className="email">{user.email}</td>
-            <td className="role">{user.role}</td>
-            <td className="created-at text-center">{moment(user.created_at).format("MMM Do YYYY [at] hh:mm a")}</td>
-            <td className="actions text-center">
+            <td className="name" style={cellStyle}>
+              {user_name}
+            </td>
+            <td className="email" style={cellStyle}>{user.email}</td>
+            <td className="role" style={cellStyle}>{user.role}</td>
+            <td className="created-at text-center" style={cellStyle}>
+              {moment(user.created_at).format("MMM Do YYYY [at] hh:mm a")}
+            </td>
+            <td className="actions text-center" style={cellStyle}>
               <input type="button"
                      value="Edit"
-                     className="btn btn-warning"
+                     className="btn btn-sm btn-warning"
                      onClick={self.handleEditUser.bind(self, user.id)}/>
             </td>
           </tr>

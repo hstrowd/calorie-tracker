@@ -32,6 +32,7 @@ class EditUser extends React.Component {
     var userAttrs = {
       name: formValues.name,
       email: formValues.email,
+      password: formValues.password,
       role: formValues.role,
       daily_calorie_target: formValues.dailyCalorieTarget
     };

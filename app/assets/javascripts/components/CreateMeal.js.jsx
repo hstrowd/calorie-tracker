@@ -35,7 +35,11 @@ class CreateMeal extends React.Component {
 
   handleSuccess() {
     Alerts.add('success', 'Successfully recorded new meal.');
-    window.location.assign('/#/dashboard');
+    var redirectPath = '/#/dashboard';
+    if ($.auth.user.id != this.props.params.userID) {
+      redirectPath = '/#/users/' + this.props.params.userID;
+    }
+    window.location.assign(redirectPath);
   }
   handleFailure() {
     Alerts.add('danger', 'Unable to record the meal. Please try again.').update();
