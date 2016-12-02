@@ -117,10 +117,12 @@ class MealList extends React.Component {
     var dateMeals = [];
     var calorieTotal = 0;
     var date = moment(meals[0].occurred_at);
-    meals.forEach(function(meal) {
-      dateMeals.push(<MealPreview key={meal.id} meal={meal} />);
-      calorieTotal += meal.calories;
-    });
+    meals
+      .sort(function(m1, m2) { return m1.occurred_at >= m2.occurred_at })
+      .forEach(function(meal) {
+        dateMeals.push(<MealPreview key={meal.id} meal={meal} />);
+        calorieTotal += meal.calories;
+      });
 
     var dailyLimitClass = '';
     if (calorieTotal > this.state.dailyCalorieTarget) {

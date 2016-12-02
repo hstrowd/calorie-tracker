@@ -8,7 +8,7 @@ var ADMIN_ROLE = 'admin';
 var ROLES={
   basic: 'Basic',
   user_manager: 'User Manager',
-  admin: 'admin'
+  admin: 'Admin'
 };
 
 class App extends React.Component {
