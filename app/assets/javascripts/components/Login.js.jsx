@@ -46,11 +46,17 @@ class Login extends React.Component {
   }
 
   render() {
+    if ($.auth.user.id) {
+      Alerts.add('success', 'Already logged in.');
+      window.location.assign('/#/dashboard');
+      return null;
+    }
+
     return (
       <div>
         <form onSubmit={this.handleSubmit.bind(this)}>
           <div className="form-group">
-            <label for="email">Email</label>
+            <label>Email</label>
             <input type="text"
                    name="email"
                    className="form-control"
@@ -60,7 +66,7 @@ class Login extends React.Component {
                    onChange={this.updateEmail.bind(this)} />
           </div>
           <div className="form-group">
-            <label for="password">Password</label>
+            <label>Password</label>
             <input type="password"
                    name="password"
                    className="form-control"

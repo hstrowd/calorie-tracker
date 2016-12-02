@@ -21,7 +21,7 @@ class UserOverview extends React.Component {
   }
 
   handleCreateMeal() {
-    window.location.assign('/#/user/' + this.props.userID + '/meals/new');
+    window.location.assign('/#/users/' + this.props.userID + '/meals/new');
   }
 
   handleFilterFormSubmit(filterAttrs) {
@@ -34,7 +34,10 @@ class UserOverview extends React.Component {
       <div>
         <div className="intro">
           <div>
-            You've recorded XX total meals, totalling XX calories.
+            <div className="pull-left"
+                 style={{margin:'0.6rem'}}>
+              You've recorded XX total meals, totalling XX calories.
+            </div>
             <span className="pull-right">
               <input type="button" value="Add Meal" className="btn btn-success" onClick={this.handleCreateMeal.bind(this)} />
             </span>

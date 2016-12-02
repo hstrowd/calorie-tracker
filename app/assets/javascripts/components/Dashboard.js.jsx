@@ -1,5 +1,11 @@
 class Dashboard extends React.Component {
   render() {
+    if (!$.auth.user.id) {
+      Alerts.add('warning', 'Login required.');
+      window.location.assign('/#/');
+      return null;
+    }
+
     return (
       <div>
         <div>

@@ -14,6 +14,19 @@ class MealForm extends React.Component {
     };
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.meal != this.props.meal) {
+      this.setState({
+        description: (nextProps.meal.description || ''),
+        calories: (nextProps.meal.calories || ''),
+        date: (moment(nextProps.meal.occurred_at).format(MealForm.DATE_FORMAT) ||
+               moment().format(MealForm.DATE_FORMAT)),
+        time: (moment(nextProps.meal.occurred_at).format(MealForm.TIME_FORMAT) ||
+               moment().format(MealForm.TIME_FORMAT))
+      });
+    }
+  }
+
   formatDate(date) {
     return date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate();
   }

@@ -9,8 +9,23 @@ class EditMeal extends React.Component {
   }
 
   componentWillMount() {
+    if (!$.auth.user.id ||
+        ($.auth.user.role == BASIC_ROLE && $.auth.user.id != this.props.params.userID)) {
+      return;
+    }
+
+    this.retrieveMeal(this.props.params.mealID);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.params.mealID != this.props.params.mealID) {
+      this.retrieveMeal(nextProps.params.mealID);
+    }
+  }
+
+  retrieveMeal(mealID) {
     var self = this;
-    var mealLookupPath = '/api/v1/meals/' + this.props.params.mealID;
+    var mealLookupPath = '/api/v1/meals/' + mealID;
     $.getJSON(mealLookupPath)
       .then(function( resp ) {
         self.setState({ meal: resp.data })
@@ -89,11 +104,22 @@ class EditMeal extends React.Component {
   }
 
   render() {
+    if (!$.auth.user.id) {
+      Alerts.add('warning', 'Login required.');
+      window.location.assign('/#/');
+      return null;
+    }
+    if ($.auth.user.role != ADMIN_ROLE && $.auth.user.id != this.props.params.userID) {
+      Alerts.add('danger', 'Unauthorized Access.');
+      window.location.assign('/#/');
+      return null;
+    }
+
     var form = '';
     if (this.state.meal) {
       form = (
         <MealForm handleFormSubmit={this.handleFormSubmit.bind(this)}
-                  userID={this.state.meal.user.id}
+                  userID={this.props.params.userID}
                   meal={this.state.meal}
                   submitAction={'Update'} />
       );

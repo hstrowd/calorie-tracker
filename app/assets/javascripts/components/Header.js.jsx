@@ -10,15 +10,24 @@ class Header extends React.Component{
   }
 
   renderNavForActiveUser() {
+    var restrictedSiteAccess = [];
+    if (($.auth.user.role == 'user_manager') || ($.auth.user.role == 'admin')) {
+      restrictedSiteAccess.push(
+        <li key='manage-users-nav'>
+            <Link to='/users'>Manage Users</Link>
+        </li>
+      );
+    }
     return (
       <span>
         <ul className="nav site-nav navbar-nav">
-          <li>
+          <li key='dashboard-nav'>
               <Link to='/dashboard'>Dashboard</Link>
           </li>
+          {restrictedSiteAccess}
         </ul>
         <ul className="nav user-nav navbar-nav pull-right">
-          <li>
+          <li key='logout-nav'>
               <Link to='/logout'>Logout</Link>
           </li>
         </ul>
@@ -32,10 +41,10 @@ class Header extends React.Component{
         <ul className="nav site-nav navbar-nav">
         </ul>
         <ul className="nav user-nav navbar-nav pull-right">
-          <li>
+          <li key="login-nav">
               <Link to='/login'>Login</Link>
           </li>
-          <li>
+          <li key="sign-up-nav">
               <Link to='/sign_up'>Sign Up</Link>
           </li>
         </ul>

@@ -1,6 +1,16 @@
 var RouteHandler = ReactRouter.RouteHandler,
     Link = ReactRouter.Link;
 
+// Global Constants:
+var BASIC_ROLE = 'basic';
+var USER_MANAGER_ROLE = 'user_manager';
+var ADMIN_ROLE = 'admin';
+var ROLES={
+  basic: 'Basic',
+  user_manager: 'User Manager',
+  admin: 'admin'
+};
+
 class App extends React.Component {
   constructor(props) {
     super(props);

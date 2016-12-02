@@ -1,6 +1,6 @@
 class MealPreview extends React.Component {
   handleEditMeal() {
-    window.location.assign('/#/user/' + this.props.meal.user.id + '/meals/' + this.props.meal.id + '/edit');
+    window.location.assign('/#/users/' + this.props.meal.user.id + '/meals/' + this.props.meal.id + '/edit');
   }
 
   render() {

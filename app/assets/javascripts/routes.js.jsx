@@ -9,8 +9,11 @@ var AppRoutes = (
     <Route handler={CreateUser} path='sign_up' />
 
     <Route handler={Dashboard} path='dashboard' />
+    <Route handler={ManageUsers} path='users' />
+    <Route handler={CreateUser} path='users/new' />
+    <Route handler={EditUser} path='users/:userID/edit' />
 
-    <Route handler={CreateMeal} path='user/:userID/meals/new' />
-    <Route handler={EditMeal} path='user/:userID/meals/:mealID/edit' />
+    <Route handler={CreateMeal} path='users/:userID/meals/new' />
+    <Route handler={EditMeal} path='users/:userID/meals/:mealID/edit' />
   </Route>
 );

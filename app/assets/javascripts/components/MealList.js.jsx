@@ -72,9 +72,14 @@ class MealList extends React.Component {
         mealList.push(self.renderDateContainer(dateString, meals));
       });
     } else {
-      meals = (
-        <div className="alert alert-info">
-          No meals recorded yet. <Link to={`/user/${this.props.userID}/meals/new`}>Click here</Link> to record your first meal.
+      var alertStyles = {
+        float: 'none',
+        margin: '1rem auto'
+      };
+      mealList = (
+        <div className="alert alert-info col-md-7 text-center"
+             style={alertStyles}>
+          No meals recorded yet. <Link to={`/users/${this.props.userID}/meals/new`}>Click here</Link> to record your first meal.
         </div>
       );
     }
@@ -107,9 +112,9 @@ class MealList extends React.Component {
       }
     }
 
-    var listDateClasses = 'meal-date ' + dailyLimitClass;
     return (
-      <div className={listDateClasses}>
+      <div key={'date-meals-' + date.format('YYYY-MM-DD')}
+           className={'meal-date ' + dailyLimitClass}>
         <div className="date-title">
           <div className="pull-left"><h3>{dateString}</h3></div>
           <div className="badge pull-right">{calorieTotal} Calories</div>

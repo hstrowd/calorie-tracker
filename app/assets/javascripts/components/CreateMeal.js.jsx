@@ -42,6 +42,17 @@ class CreateMeal extends React.Component {
   }
 
   render() {
+    if (!$.auth.user.id) {
+      Alerts.add('warning', 'Login required.');
+      window.location.assign('/#/');
+      return null;
+    }
+    if ($.auth.user.role != ADMIN_ROLE && $.auth.user.id != this.props.params.userID) {
+      Alerts.add('danger', 'Unauthorized Access.');
+      window.location.assign('/#/');
+      return null;
+    }
+
     return (
       <div>
         <div className="intro">
