@@ -10,7 +10,7 @@ class UserDetails extends React.Component {
 
   componentWillMount() {
     var self = this;
-    var userLookupPath = '/api/v1/users/' + this.props.userID + '?summary=true';
+    var userLookupPath = '/api/v1/users/' + this.props.userID;
     $.getJSON(userLookupPath)
       .then(function( resp ) {
         self.setState({ user: resp.data })
@@ -29,13 +29,20 @@ class UserDetails extends React.Component {
   }
 
   render() {
+    var introMsg = 'Your account details will be loaded shortly...';
+    if (this.state.user) {
+      var user = this.state.user;
+      introMsg = 'You\'ve recorded ' + user.meal_count + ' total meals, ' +
+                 'totalling ' + user.calorie_total + ' calories. ' +
+                 'Your daily target is to consume no more than ' + user.daily_calorie_target + ' calories.';
+    }
     return (
       <div>
         <div className="intro">
           <div>
             <div className="pull-left"
                  style={{margin:'0.6rem'}}>
-              You've recorded XX total meals, totalling XX calories.
+              {introMsg}
             </div>
             <span className="pull-right">
               <input type="button" value="Add Meal" className="btn btn-success" onClick={this.handleCreateMeal.bind(this)} />

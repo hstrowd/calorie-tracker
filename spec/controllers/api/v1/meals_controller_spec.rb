@@ -16,6 +16,9 @@ RSpec.describe Api::V1::MealsController do
   context 'POST /api/v1/meals' do
     context 'success requsets' do
       before do
+        # Clear out the user's meals to start fresh.
+        @user.meals.each(&:delete)
+
         three_days_ago_date = Date.today - 3.days
         two_days_ago_date = Date.today - 2.days
         yesterday_date = Date.today - 1.day
@@ -39,7 +42,9 @@ RSpec.describe Api::V1::MealsController do
         today_breakfast_datetime = DateTime.parse("#{today_date.to_s} #{breakfast_time.hour}:#{breakfast_time.min}:#{breakfast_time.sec}")
         @today_breakfast_meal = FactoryGirl.create(:meal, user: @user, occurred_at: today_breakfast_datetime)
 
-        @other_user_meal = FactoryGirl.create(:meal)
+        @other_user = FactoryGirl.create(:user)
+        @other_user.meals.each(&:delete)
+        @other_user_meal = FactoryGirl.create(:meal, user: @other_user)
       end
 
       context 'non-admin users' do
@@ -210,7 +215,7 @@ RSpec.describe Api::V1::MealsController do
 
         context 'with user ID' do
           it 'ignores the specified user ID' do
-            get '/api/v1/meals', user_id: @other_user_meal.user.id
+            get '/api/v1/meals', user_id: @other_user.id
 
             json_body = JSON.parse(last_response.body)
             expect(json_body['data'].length).to eq(6)

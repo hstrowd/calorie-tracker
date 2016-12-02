@@ -305,7 +305,7 @@ RSpec.describe Api::V1::UsersController do
           @new_user_attrs = FactoryGirl.attributes_for(:user)
         end
 
-        %w(name email password daily_calorie_target).each do |attribute|
+        %w(name email password).each do |attribute|
           context "missing #{attribute}" do
             before do
               @new_user_attrs.delete(attribute.to_sym)
@@ -397,6 +397,8 @@ RSpec.describe Api::V1::UsersController do
         expect(json_body['data']['name']).to eq(@user.name)
         expect(json_body['data']['email']).to eq(@user.email)
         expect(json_body['data']['daily_calorie_target']).to eq(@user.daily_calorie_target)
+        expect(json_body['data']['meal_count']).to eq(@user.meals.length)
+        expect(json_body['data']['calorie_total']).to eq(@user.meals.collect(&:calories).sum)
         expect(normalize_date_time(json_body['data']['created_at'])).to eq(normalize_date_time(@user.created_at))
       end
 
