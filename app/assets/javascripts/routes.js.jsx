@@ -12,6 +12,7 @@ var AppRoutes = (
     <Route handler={UsersIndex} path='users' />
     <Route handler={UserNew}    path='users/new' />
     <Route handler={UserShow}   path='dashboard' />
+    <Route handler={UserEdit}   path='profile' />
     <Route handler={UserShow}   path='users/:userID' />
     <Route handler={UserEdit}   path='users/:userID/edit' />
 

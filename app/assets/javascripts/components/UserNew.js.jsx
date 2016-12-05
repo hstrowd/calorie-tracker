@@ -31,7 +31,14 @@ class UserNew extends React.Component {
   handleFormSubmit(formValues) {
     Alerts.add('info', 'Creating account....').update();
 
-    this.createUser(formValues);
+    var userAttrs = {
+      name: formValues.name,
+      email: formValues.email,
+      password: formValues.password,
+      role: formValues.role,
+      daily_calorie_target: formValues.dailyCalorieTarget
+    };
+    this.createUser(userAttrs);
   }
 
   createUser(data) {

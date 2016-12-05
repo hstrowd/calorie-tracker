@@ -27,6 +27,9 @@ class Header extends React.Component{
           {restrictedSiteAccess}
         </ul>
         <ul className="nav user-nav navbar-nav pull-right">
+          <li key='profile-nav'>
+              <Link to='/profile'>Profile</Link>
+          </li>
           <li key='logout-nav'>
               <Link to='/logout'>Logout</Link>
           </li>

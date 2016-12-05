@@ -4,26 +4,36 @@ class UserEdit extends React.Component {
 
     var currentDate = new Date();
     this.state = {
-      user: (this.props.user || null)
+      userID: (this.props.params.userID || $.auth.user.id)
     };
   }
 
   componentWillMount() {
     if (!$.auth.user.id ||
-        ($.auth.user.role == BASIC_ROLE && $.auth.user.id != this.props.params.userID)) {
+        ($.auth.user.role == BASIC_ROLE && $.auth.user.id != this.state.userID)) {
       return;
     }
 
     var self = this;
-    var userLookupPath = '/api/v1/users/' + this.props.params.userID;
+    var userLookupPath = '/api/v1/users/' + this.state.userID;
     $.getJSON(userLookupPath)
       .then(function( resp ) {
         self.setState({ user: resp.data })
       })
       .fail(function() {
         Alerts.add('danger', 'Unable to modify the user at this time. Please try again.');
-        window.location.assign('/#/users');
+        var redirectPath = '/#/dashboard';
+        if ($.auth.user.id != this.state.userID) {
+          redirectPath = '/#/users';
+        }
+        window.location.assign(redirectPath);
       });
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.params.userID != this.props.params.userID) {
+      this.setState({ userID: (nextProps.params.userID || $.auth.user.id) });
+    }
   }
 
   handleFormSubmit(formValues) {
@@ -36,7 +46,7 @@ class UserEdit extends React.Component {
       role: formValues.role,
       daily_calorie_target: formValues.dailyCalorieTarget
     };
-    this.updateUser(this.props.params.userID, userAttrs);
+    this.updateUser(this.state.userID, userAttrs);
   }
 
   updateUser(userID, userAttrs) {
@@ -58,7 +68,11 @@ class UserEdit extends React.Component {
 
   handleUpdateSuccess() {
     Alerts.add('success', 'Successfully updated the user.');
-    window.location.assign('/#/users');
+    var redirectPath = '/#/dashboard';
+    if ($.auth.user.id != this.state.userID) {
+      redirectPath = '/#/users';
+    }
+    window.location.assign(redirectPath);
   }
   handleUpdateFailure() {
     Alerts.add('danger', 'Unable to update the user.').update();
@@ -67,7 +81,7 @@ class UserEdit extends React.Component {
   handleDeleteUser() {
     Alerts.add('danger', 'Deleting user....').update();
 
-    this.deleteUser(this.props.params.userID);
+    this.deleteUser(this.state.userID);
   }
 
   deleteUser(userID) {
@@ -88,7 +102,13 @@ class UserEdit extends React.Component {
 
   handleDeleteSuccess() {
     Alerts.add('success', 'Successfully deleted the user.');
-    window.location.assign('/#/users');
+
+    if ($.auth.user.id != this.state.userID) {
+      window.location.assign('/#/users');
+    } else {
+      $.auth.validateToken()
+        .always(function() { window.location.assign('/#/'); });
+    }
   }
   handleDeleteFailure() {
     Alerts.add('danger', 'Unable to delete the user.').update();
@@ -100,7 +120,7 @@ class UserEdit extends React.Component {
       window.location.assign('/#/');
       return null;
     }
-    if ($.auth.user.role == BASIC_ROLE && $.auth.user.id != this.props.params.userID) {
+    if ($.auth.user.role == BASIC_ROLE && $.auth.user.id != this.state.userID) {
       Alerts.add('danger', 'Unauthorized Access.');
       window.location.assign('/#/');
       return null;
@@ -110,7 +130,7 @@ class UserEdit extends React.Component {
     if (this.state.user) {
       form = (
         <UserForm handleFormSubmit={this.handleFormSubmit.bind(this)}
-                  userID={this.props.params.userID}
+                  userID={this.state.userID}
                   user={this.state.user}
                   submitAction={'Update'}
                   requireCompleteRecord={false} />
