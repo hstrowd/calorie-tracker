@@ -42,10 +42,12 @@ class MealList extends React.Component {
       queryParams.push('user_id=' + userID);
     }
     if (filters.startDate) {
-      queryParams.push('start_date=' + filters.startDate);
+      var startDate = moment(filters.startDate).startOf('day').format();
+      queryParams.push('start_date=' + startDate);
     }
     if (filters.endDate) {
-      queryParams.push('end_date=' + filters.endDate);
+      var endDate = moment(filters.endDate).endOf('day').format();
+      queryParams.push('end_date=' + endDate);
     }
     // Account for the timezone offset.
     if (filters.startHour || filters.endHour) {

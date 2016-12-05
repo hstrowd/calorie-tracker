@@ -15,8 +15,14 @@ module Api::V1
           raise 'Invalid Page Value. Must be greater than or equal to 1.'
         end
 
-        start_date = params[:start_date]&.to_date
-        end_date = params[:end_date]&.to_date
+        if params[:start_date].present? &&
+           !(start_date = params[:start_date].to_time)
+          raise 'Invalid Start Date Value. Must be a valid timestamp.'
+        end
+        if params[:end_date].present? &&
+           !(end_date = params[:end_date].to_time)
+          raise 'Invalid End Date Value. Must be a valid timestamp.'
+        end
 
         start_hour = params[:start_hour]&.to_i
         if start_hour.present? && (start_hour.to_s != params[:start_hour] || start_hour < 0 || start_hour > 23)
@@ -37,10 +43,10 @@ module Api::V1
       meals = Meal.where(user_id: user_id)
 
       if start_date.present?
-        meals = meals.where("DATE_TRUNC('DAY', occurred_at) >= ?", start_date)
+        meals = meals.where("occurred_at >= ?", start_date)
       end
       if end_date.present?
-        meals = meals.where("DATE_TRUNC('DAY', occurred_at) <= ?", end_date)
+        meals = meals.where("occurred_at <= ?", end_date)
       end
 
       if start_hour.present? && end_hour.present?

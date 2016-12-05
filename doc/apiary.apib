@@ -231,8 +231,8 @@ Retrieves a set of meals for a given user. Basic users are only allowed to retri
 
     + limit: 50 (number) - The number of records to be returned. Minimum: 1; Maximum: 999; Default: 50
     + page: 1 (number) - The page of results in the resultset to be returned. Minimum: 1; Default: 1
-    + start_date: `2016-11-22` (string) - The earliest date of occurance for meals to be included in the resultset, inclusively.
-    + end_date: `2016-11-22` (string) - The latest date of occurance for meals to be included in the resultset, inclusively.
+    + start_date: `2016-11-22T06:00:00Z` (string) - The earliest time of occurance for meals to be included in the resultset.
+    + end_date: `2016-11-23T05:59:59Z` (string) - The latest time of occurance for meals to be included in the resultset.
     + start_hour: 0 (number) - The earliest hour of the day for the occurance of meals to be included in the resultset, inclusively. Minimum: 0; Maximum: 23
     + end_hour: 23 (number) - The latest hour of the day for the occurance of meals to be included in the resultset, inclusively. Minimum: 0; Maximum: 23
     + user_id: 1234 (number) - The ID of the user whose meals should be included in the resultset. Only used by user manager and admin user requests.

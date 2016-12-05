@@ -129,7 +129,7 @@ RSpec.describe Api::V1::MealsController do
 
         context 'with start date' do
           it 'returns only meals that occured since the specified date, inclusively' do
-            get '/api/v1/meals', start_date: (Date.today - 1.day)
+            get '/api/v1/meals', start_date: (Time.now - 1.day).beginning_of_day
 
             json_body = JSON.parse(last_response.body)
             expect(json_body['data'].length).to eq(3)
@@ -141,7 +141,7 @@ RSpec.describe Api::V1::MealsController do
 
         context ' with end date' do
           it 'returns only meals that occured up until the specified date, inclusively' do
-            get '/api/v1/meals', end_date: (Date.today - 2.day)
+            get '/api/v1/meals', end_date: (Time.now - 2.day).end_of_day
 
             json_body = JSON.parse(last_response.body)
             expect(json_body['data'].length).to eq(3)
@@ -153,7 +153,7 @@ RSpec.describe Api::V1::MealsController do
 
         context 'with both start and end dates' do
           it 'returns only meals that occured between the specified dates, inclusively' do
-            get '/api/v1/meals', start_date: (Date.today - 2.day), end_date: (Date.today - 1.day)
+            get '/api/v1/meals', start_date: (Time.now - 2.day).beginning_of_day, end_date: (Time.now - 1.day).end_of_day
 
             json_body = JSON.parse(last_response.body)
             expect(json_body['data'].length).to eq(4)
@@ -263,7 +263,7 @@ RSpec.describe Api::V1::MealsController do
           expect(last_response.status).to eq(422)
           json_body = JSON.parse(last_response.body)
           expect(json_body['code']).to eq('invalid_request')
-          expect(json_body['error']).to match(/invalid date/i)
+          expect(json_body['error']).to match(/invalid start date/i)
         end
 
         it 'returns a 422 if the end date is not an date' do
@@ -272,7 +272,7 @@ RSpec.describe Api::V1::MealsController do
           expect(last_response.status).to eq(422)
           json_body = JSON.parse(last_response.body)
           expect(json_body['code']).to eq('invalid_request')
-          expect(json_body['error']).to match(/invalid date/i)
+          expect(json_body['error']).to match(/invalid end date/i)
         end
 
         it 'returns a 422 if the start hour is not an integer' do
